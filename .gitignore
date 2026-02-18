@@ -4,5 +4,5 @@ venv
 # Flask stuff:
 instance/
 .webassets-cache
-# Others
+# Other:
 .cursorignore

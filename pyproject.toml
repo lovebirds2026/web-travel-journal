@@ -12,9 +12,6 @@ description = "Travel Journal Web Solution"
 requires-python = ">=3.13"
 dependencies = ["flask>3.1", ]
 
-[project.scripts]
-web_travel = "web_travel.app:app"
-
 [project.optional-dependencies]
 test = ["pytest>=7.0"]
 
