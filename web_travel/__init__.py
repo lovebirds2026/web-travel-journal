@@ -32,7 +32,7 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        return 'Lovebirds® 2026 Dev domain on Flask 3.1.2 running on Python 3.13 !!'
+        return 'Lovebirds® 2026 Dev domain on Flask 3.1.2 running on Python 3.13'
 
     return app
 
