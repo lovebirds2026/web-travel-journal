@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Travel Journal Web Solution"
 requires-python = ">=3.13"
-dependencies = ["flask>3.1", ]
+dependencies = ["flask>3.1", "Flask-SQLAlchemy>3.1", "psycopg2", ]
 
 [project.optional-dependencies]
 test = ["pytest>=7.0"]
