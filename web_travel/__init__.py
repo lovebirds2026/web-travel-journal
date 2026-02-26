@@ -1,9 +1,30 @@
+import os
+import sys
+import logging
+
 from flask import Flask
-from sqlalchemy import MetaData
-#from .db import db
+from sqlalchemy.orm import DeclarativeBase
+from flask_sqlalchemy import SQLAlchemy
+
+log_path = os.path.join(os.path.dirname(__file__), 'logs', 'logfile.log')
+os.makedirs(os.path.dirname(log_path), exist_ok=True)
+logging.basicConfig(
+        handlers = [
+            logging.StreamHandler(sys.stderr),
+            logging.FileHandler(log_path)
+        ],
+        format='%(asctime)s %(levelname)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        level=logging.INFO,
+    )
+log = logging.getLogger(__name__)
+
+# db setup
+class Base(DeclarativeBase):
+    pass
+db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session automatically
 
 def create_app(test_config=None):
-    """Create and configure the app"""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
@@ -14,21 +35,14 @@ def create_app(test_config=None):
     else:
         app.config.from_mapping(test_config)
 
-    app.logger.debug('?')
+    app.config.update(SQLALCHEMY_DATABASE_URI = app.config.get('DATABASE_URL'))
+    #log.info(app.config)
 
-    # db.init_app(app) # register the current Flask app with this SQLAlchemy instance
+    db.init_app(app) # connect Flask with the SQLAlchemy db
 
-    # metadata_obj = MetaData(schema="public")
-    # metadata_obj.reflect(db)
-    # print(metadata_obj)
-
-    # with app.app_context():
-    #     db.reflect() # not working
-    # From the default bind key
-    # class User(db.Model):
-    #     __table__ = db.metadata.tables["user"]
-    # print(User.__table__)
-
+    # blueprints
+    from . import auth # deferred import (moves the import from module load time -> call time)
+    app.register_blueprint(auth.bluepr)
 
     @app.route('/')
     def index():

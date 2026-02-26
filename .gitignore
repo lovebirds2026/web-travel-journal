@@ -1,6 +1,7 @@
 __pycache__/
 .pytest_cache/
 venv
+logs
 # Flask stuff:
 instance/
 .webassets-cache
