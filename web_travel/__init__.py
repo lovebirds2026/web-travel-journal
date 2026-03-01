@@ -19,10 +19,10 @@ logging.basicConfig(
     )
 log = logging.getLogger(__name__)
 
-# db setup
-class Base(DeclarativeBase):
-    pass
+# initial db setup
+class Base(DeclarativeBase): pass
 db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session automatically
+
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -38,7 +38,10 @@ def create_app(test_config=None):
     app.config.update(SQLALCHEMY_DATABASE_URI = app.config.get('DATABASE_URL'))
     #log.info(app.config)
 
-    db.init_app(app) # connect Flask with the SQLAlchemy db
+    # connect Flask with the SQLAlchemy db
+    db.init_app(app) 
+    with app.app_context():
+        db.reflect() # get existing tables
 
     # blueprints
     from . import auth # deferred import (moves the import from module load time -> call time)
