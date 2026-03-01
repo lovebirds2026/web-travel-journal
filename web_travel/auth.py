@@ -3,8 +3,9 @@ import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import text
+from flask_mail import Message
 
-from . import db
+from . import db, mail
 from .model import User
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
@@ -69,6 +70,28 @@ def login():
         flash(error)
 
     return render_template('auth/login.html')
+
+
+@bluepr.route('/forgot', methods=('GET', 'POST'))
+def reset_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        error = None
+
+        stmt = db.select(User).where(User.email == email)
+        user = db.session.scalar(stmt)
+        print(user)
+
+        if user is not None:
+            ...
+            # msg = Message(
+            #     'Web Travel password reset link',
+            #     recipients=[recipient],
+            #     body=body # or html=..
+            # )
+            # mail.send(msg)
+
+    return render_template('auth/resetpassword.html')
 
 
 # registers a function that runs before the view function, no matter what URL is requested.

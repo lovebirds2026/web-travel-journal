@@ -5,6 +5,7 @@ import logging
 from flask import Flask
 from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
 
 log_path = os.path.join(os.path.dirname(__file__), 'logs', 'logfile.log')
 os.makedirs(os.path.dirname(log_path), exist_ok=True)
@@ -20,9 +21,11 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # initial db setup
-class Base(DeclarativeBase): pass
+class Base(DeclarativeBase):
+    pass
 db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session automatically
 
+mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -36,12 +39,13 @@ def create_app(test_config=None):
         app.config.from_mapping(test_config)
 
     app.config.update(SQLALCHEMY_DATABASE_URI = app.config.get('DATABASE_URL'))
-    #log.info(app.config)
 
     # connect Flask with the SQLAlchemy db
-    db.init_app(app) 
+    db.init_app(app)
     with app.app_context():
         db.reflect() # get existing tables
+
+    mail.init_app(app) # set up at configuration time
 
     # blueprints
     from . import auth # deferred import (moves the import from module load time -> call time)
