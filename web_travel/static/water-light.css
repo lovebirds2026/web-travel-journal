@@ -884,3 +884,11 @@ body > footer {
     text-decoration: underline;
   }
 }
+
+/* custom CSS */
+.flash > * {
+  color: darkgreen;
+}
+.flash.error > * {
+  color: red;
+}

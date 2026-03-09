@@ -17,33 +17,39 @@ def test():
     stmt = db.select(User)
     res1 = db.session.execute(stmt).scalars().first()
     #print(vars(res1))
-    return f'Module {__name__}: OK, found user {res[0][:5]}'
+    return f'Module {__name__}: OK, found user {res[0][:3]}'
 
 # http://127.0.0.1:5000/auth/register?username=dar&password=xx
 @bluepr.route('/register', methods=('GET', 'POST'))
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        full_name = request.form['full_name']
+        email = request.form['email']
         password = request.form['password']
-        error = None
+        password2 = request.form['password2']
+        errors = []
 
-        if not username: error = 'Username is required'
-        if not password: error = 'Password is required'
+        if not username: errors.append('Username is required')
+        if not email: errors.append('Email is required')
+        if not password: errors.append('Password is required')
+        if password != password2: errors.append('Passwords do not match')
 
-        if error is None:
+        if not errors:
             try:
-                new_user = User(username=username, password=generate_password_hash(password))
+                new_user = User(username=username, password=generate_password_hash(password),
+                    email=email, full_name=full_name)
                 db.session.add(new_user)
                 db.session.commit()
             except db.IntegrityError:
-                error = f'User {username} already exists.'
+                errors.append(f'User {username} already exists.')
             else:
                 flash(f'User {new_user.username} successfully created. You can now login')
                 return redirect(url_for('auth.login'))
 
-        flash(error)
+        [flash(msg, 'error') for msg in errors]
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', form=request.form)
 
 
 @bluepr.route('/login', methods=('GET', 'POST'))
@@ -64,7 +70,8 @@ def login():
 
         if error is None:
             session.clear()
-            session['user_id'] = user.id
+            session['user_id'] = user.id # atob(session.split('.')[0]) in browser console
+            session['is_admin'] = user.is_admin
             return redirect(url_for('index'))
 
         flash(error)
@@ -83,13 +90,15 @@ def reset_password():
         print(user)
 
         if user is not None:
-            ...
+            print('-- sending email..')
             # msg = Message(
             #     'Web Travel password reset link',
-            #     recipients=[recipient],
-            #     body=body # or html=..
+            #     sender='office@ai-me.bg',
+            #     recipients=[email],
+            #     body='token here' # or html=..
             # )
             # mail.send(msg)
+            # print('-- email sent.')
 
     return render_template('auth/resetpassword.html')
 
@@ -108,7 +117,7 @@ def load_logged_in_user():
 @bluepr.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.login'))
 
 
 # utility decorator to require logged in user
@@ -117,6 +126,16 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+# utility decorator to require logged in user
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None or not g.user_is_admin:
+            return redirect(url_for('index'))
         return view(**kwargs)
 
     return wrapped_view

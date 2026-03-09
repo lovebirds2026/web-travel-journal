@@ -8,3 +8,11 @@ class User(db.Model):
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'
+
+
+class Continent(db.Model):
+    ...
+
+
+
+# db.create_all()
