@@ -2,11 +2,12 @@ import functools
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import text
+from sqlalchemy import text, exc
 from flask_mail import Message
 
 from . import db, mail
 from .model import User
+from .utils import create_token, decode_token
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -15,12 +16,12 @@ def test():
     res = db.session.execute(text('SELECT * FROM public.user')).all()
 
     stmt = db.select(User)
-    res1 = db.session.execute(stmt).scalars().first()
+    res1 = db.session.scalar(stmt) # scalar = execute + scalars + first
     #print(vars(res1))
     return f'Module {__name__}: OK, found user {res[0][:3]}'
 
 # http://127.0.0.1:5000/auth/register?username=dar&password=xx
-@bluepr.route('/register', methods=('GET', 'POST'))
+@bluepr.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -41,10 +42,22 @@ def register():
                     email=email, full_name=full_name)
                 db.session.add(new_user)
                 db.session.commit()
-            except db.IntegrityError:
-                errors.append(f'User {username} already exists.')
+            except db.exc.IntegrityError:
+                errors.append(f'User with email {email} already exists.')
             else:
-                flash(f'User {new_user.username} successfully created. You can now login')
+                flash(f'User {new_user.username} successfully created. '
+                    'You can login after you verify your email.')
+                # send email confirmation link
+                token = create_token({'user_id': new_user.id}, 3600)
+                link = url_for('auth.confirm_email', _external=True, t=token)
+                msg = Message(
+                    'Web Travel account email confirmation',
+                    sender='office@ai-me.bg',
+                    recipients=[new_user.email],
+                    html='Click here to confirm your email at Web Travel:</br> '
+                        f'<a href="{link}" target="_blank">{link}</a> '
+                )
+                mail.send(msg)
                 return redirect(url_for('auth.login'))
 
         [flash(msg, 'error') for msg in errors]
@@ -52,7 +65,7 @@ def register():
     return render_template('auth/register.html', form=request.form)
 
 
-@bluepr.route('/login', methods=('GET', 'POST'))
+@bluepr.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -79,7 +92,7 @@ def login():
     return render_template('auth/login.html')
 
 
-@bluepr.route('/forgot', methods=('GET', 'POST'))
+@bluepr.route('/forgot', methods=['GET', 'POST'])
 def reset_password():
     if request.method == 'POST':
         email = request.form['email']
@@ -101,6 +114,18 @@ def reset_password():
             # print('-- email sent.')
 
     return render_template('auth/resetpassword.html')
+
+
+@bluepr.route('/confirm/<t>', methods=['GET'])
+def confirm_email(t):
+    if token := decode_token(t):
+        user = db.get_or_404(User, token['user_id'])
+        user.active = True
+        db.session.commit()
+
+    flash('Email successfully confirmed. You can now login.')
+
+    return redirect(url_for('auth.login'))
 
 
 # registers a function that runs before the view function, no matter what URL is requested.
@@ -134,7 +159,7 @@ def login_required(view):
 def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None or not g.user_is_admin:
+        if g.user is None or not g.user.is_admin:
             return redirect(url_for('index'))
         return view(**kwargs)
 
