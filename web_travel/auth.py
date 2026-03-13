@@ -1,6 +1,6 @@
 import functools
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import text, exc
 from flask_mail import Message
@@ -49,13 +49,13 @@ def register():
                 flash(f'User {new_user.username} successfully created. '
                     'You can login after you verify your email.')
                 # send email confirmation link
-                token = create_token({'user_id': new_user.id}, 3600)
+                token = create_token({'user_id': new_user.id}, 60 * 60)
                 link = url_for('auth.confirm_email', _external=True, t=token)
                 msg = Message(
-                    'Web Travel account email confirmation',
+                    'Travel Journal account email confirmation',
                     sender='office@ai-me.bg',
                     recipients=[new_user.email],
-                    html='Click here to confirm your email at Web Travel:</br> '
+                    html='Click here to confirm your email at Travel Journal:</br> '
                         f'<a href="{link}" target="_blank">{link}</a> '
                 )
                 mail.send(msg)
@@ -64,6 +64,17 @@ def register():
         [flash(msg, 'error') for msg in errors]
 
     return render_template('auth/register.html', form=request.form)
+
+
+@bluepr.route('/confirm/<t>', methods=['GET'])
+def confirm_email(t):
+    if token := decode_token(t):
+        user = db.get_or_404(User, token['user_id'])
+        user.active = True
+        db.session.commit()
+        flash('Email successfully confirmed. You can now login.')
+
+    return redirect(url_for('auth.login'))
 
 
 @bluepr.route('/login', methods=['GET', 'POST'])
@@ -95,38 +106,57 @@ def login():
 
 
 @bluepr.route('/forgot', methods=['GET', 'POST'])
-def reset_password():
+def request_password_reset():
     if request.method == 'POST':
         email = request.form['email']
-        error = None
-
         stmt = db.select(User).where(User.email == email)
         user = db.session.scalar(stmt)
-        print(user)
 
         if user is not None:
-            print('-- sending email..')
-            # msg = Message(
-            #     'Web Travel password reset link',
-            #     sender='office@ai-me.bg',
-            #     recipients=[email],
-            #     body='token here' # or html=..
-            # )
-            # mail.send(msg)
-            # print('-- email sent.')
+            # send email confirmation link
+            token = create_token({'user_id': user.id}, 30 * 60) # 30min expiration
+            link = url_for('auth.reset_password', _external=True, t=token)
+            msg = Message(
+                'Travel Journal reset password link',
+                sender='office@ai-me.bg',
+                recipients=[user.email],
+                html='Click here to reset your password at Travel Journal:</br> '
+                    f'This link will be valid for 30 minutes.</br> '
+                    '<a href="{link}" target="_blank">{link}</a> '
+            )
+            mail.send(msg)
+
+        flash('You will receive an email reset link if you are registered with this address.')
+
+    return render_template('auth/requestpasswordreset.html')
+
+
+@bluepr.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    token_param = request.args.get('t')
+    if token_param:
+        token = decode_token(token_param)
+    if not token_param or not token:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        password = request.form['password']
+        password2 = request.form['password2']
+        error = None
+
+        if not password or not password2: error = 'Both Password fields are required'
+        elif password != password2: error = 'Passwords do not match'
+
+        if not error:
+            user = db.session.get(User, token['user_id'])
+            user.password = generate_password_hash(password)
+            db.session.commit()
+            flash('Password changed successfully. You can now login.')
+            return redirect(url_for('auth.login'))
+
+        flash(error, 'error')
 
     return render_template('auth/resetpassword.html')
-
-
-@bluepr.route('/confirm/<t>', methods=['GET'])
-def confirm_email(t):
-    if token := decode_token(t):
-        user = db.get_or_404(User, token['user_id'])
-        user.active = True
-        db.session.commit()
-        flash('Email successfully confirmed. You can now login.')
-
-    return redirect(url_for('auth.login'))
 
 
 @bluepr.route('/logout')
