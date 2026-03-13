@@ -6,8 +6,8 @@
 
 {% block content %}
   <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" value="{{form['email']}}" required>
     <label for="password">Password</label>
     <input type="password" name="password" id="password" required>
     <a href="{{ url_for('auth.reset_password') }}">Forgot password?</a>

@@ -7,11 +7,11 @@ from flask_mail import Message
 
 from . import db, mail
 from .model import User
-from .utils import create_token, decode_token
+from .utils import create_token, decode_token, check_email_input
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
 
-@bluepr.route('/') # , methods=['GET', 'POST']
+@bluepr.route('/')
 def test():
     res = db.session.execute(text('SELECT * FROM public.user')).all()
 
@@ -20,7 +20,7 @@ def test():
     #print(vars(res1))
     return f'Module {__name__}: OK, found user {res[0][:3]}'
 
-# http://127.0.0.1:5000/auth/register?username=dar&password=xx
+
 @bluepr.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -33,6 +33,7 @@ def register():
 
         if not username: errors.append('Username is required')
         if not email: errors.append('Email is required')
+        elif not check_email_input(email): errors.append('Invalid email format.')
         if not password: errors.append('Password is required')
         if password != password2: errors.append('Passwords do not match')
 
@@ -68,16 +69,17 @@ def register():
 @bluepr.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         error = None
 
-        stmt = db.select(User).where(User.username == username)
-        user = db.session.execute(stmt).scalar_one()
-        print(user)
+        stmt = db.select(User).where(User.email == email)
+        user = db.session.scalars(stmt).one_or_none() # .scalar_one_or_none()
 
         if user is None:
-            error = 'Incorrect username.'
+            error = 'Invalid email.'
+        elif not user.active:
+            error = 'You must confirm your email first by clicking on the link sent to you when registering.'
         elif not check_password_hash(user.password, password):
             error = 'Incorrect password.'
 
@@ -87,9 +89,9 @@ def login():
             session['is_admin'] = user.is_admin
             return redirect(url_for('index'))
 
-        flash(error)
+        flash(error, 'error')
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', form=request.form)
 
 
 @bluepr.route('/forgot', methods=['GET', 'POST'])
@@ -122,9 +124,14 @@ def confirm_email(t):
         user = db.get_or_404(User, token['user_id'])
         user.active = True
         db.session.commit()
+        flash('Email successfully confirmed. You can now login.')
 
-    flash('Email successfully confirmed. You can now login.')
+    return redirect(url_for('auth.login'))
 
+
+@bluepr.route('/logout')
+def logout():
+    session.clear()
     return redirect(url_for('auth.login'))
 
 
@@ -139,12 +146,6 @@ def load_logged_in_user():
         g.user = db.session.get(User, user_id)
 
 
-@bluepr.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('auth.login'))
-
-
 # utility decorator to require logged in user
 def login_required(view):
     @functools.wraps(view)
@@ -155,7 +156,7 @@ def login_required(view):
 
     return wrapped_view
 
-# utility decorator to require logged in user
+# utility decorator to require logged in admin
 def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
