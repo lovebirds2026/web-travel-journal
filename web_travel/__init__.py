@@ -51,11 +51,7 @@ def create_app(test_config=None):
     # blueprints
     from . import auth # deferred import (moves the import from module load time -> call time)
     app.register_blueprint(auth.bluepr)
-
-    @app.route('/')
-    def index():
-        return 'Lovebirds® 2026 Dev domain on Flask 3.1.2 running on Python 3.13'
+    from . import routes
+    app.register_blueprint(routes.bluepr)
 
     return app
-
-

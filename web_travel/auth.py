@@ -11,6 +11,37 @@ from .utils import create_token, decode_token, check_email_input
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
 
+# utility decorator to require NOT logged in user
+def guest_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is not None:
+            return redirect(url_for('main.index'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+# utility decorator to require logged in user
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+# utility decorator to require logged in admin
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None or not g.user.is_admin:
+            return redirect(url_for('main.index'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+# routes
 @bluepr.route('/')
 def test():
     res = db.session.execute(text('SELECT * FROM public.user')).all()
@@ -22,6 +53,7 @@ def test():
 
 
 @bluepr.route('/register', methods=['GET', 'POST'])
+@guest_required
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -78,6 +110,7 @@ def confirm_email(t):
 
 
 @bluepr.route('/login', methods=['GET', 'POST'])
+@guest_required
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -98,7 +131,7 @@ def login():
             session.clear()
             session['user_id'] = user.id # atob(session.split('.')[0]) in browser console
             session['is_admin'] = user.is_admin
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
 
         flash(error, 'error')
 
@@ -121,8 +154,8 @@ def request_password_reset():
                 sender='office@ai-me.bg',
                 recipients=[user.email],
                 html='Click here to reset your password at Travel Journal:</br> '
-                    f'This link will be valid for 30 minutes.</br> '
-                    '<a href="{link}" target="_blank">{link}</a> '
+                    'This link will be valid for 30 minutes.</br> '
+                    f'<a href="{link}" target="_blank">{link}</a> '
             )
             mail.send(msg)
 
@@ -137,7 +170,7 @@ def reset_password():
     if token_param:
         token = decode_token(token_param)
     if not token_param or not token:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
 
     if request.method == 'POST':
         password = request.form['password']
@@ -174,24 +207,3 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = db.session.get(User, user_id)
-
-
-# utility decorator to require logged in user
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-        return view(**kwargs)
-
-    return wrapped_view
-
-# utility decorator to require logged in admin
-def admin_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None or not g.user.is_admin:
-            return redirect(url_for('index'))
-        return view(**kwargs)
-
-    return wrapped_view

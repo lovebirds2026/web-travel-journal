@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}User account management{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="full_name">Name</label>
+    <input name="full_name" id="full_name" value="{{ g.user.full_name }}">
+    <br/>
+    <label for="password">New Password</label>
+    <input type="password" name="password" id="password">
+    <label for="password2">Repeat New Password</label>
+    <input type="password" name="password2" id="password2">
+    <br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

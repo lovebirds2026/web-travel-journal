@@ -1,5 +1,5 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Web Travel Journal</title>
+<title>{% block title %}{% endblock %}{{ title }} - Web Travel Journal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lovebirds_ico.ico') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='water-light.css') }}">
@@ -9,15 +9,20 @@
   <ul>
     {% if g.user %}
       <li><span>Heyya, {{ g.user['username'] }}</span>
+      <li><a href="{{ url_for('main.index') }}">Home</a>
+      <li><a href="{{ url_for('main.user_account') }}">Account Management</a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}
+      <li><a href="{{ url_for('main.index') }}">Home</a>
       <li><a href="{{ url_for('auth.register') }}">Register</a>
       <li><a href="{{ url_for('auth.login') }}">Log In</a>
     {% endif %}
+
   </ul>
 </nav>
 <section class="content">
   <header>
+    {{ header }}
     {% block header %}{% endblock %}
   </header>
   {% for category, message in get_flashed_messages(with_categories=True) %}

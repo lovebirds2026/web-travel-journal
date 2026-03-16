@@ -887,8 +887,13 @@ body > footer {
 
 /* custom CSS */
 .flash > * {
+  font-size: 1.3em;
   color: darkgreen;
 }
 .flash.error > * {
   color: red;
+}
+nav ul li {
+    display: inline;
+    margin-right: 2em;
 }
