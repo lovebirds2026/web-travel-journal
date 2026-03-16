@@ -21,4 +21,4 @@ def decode_token(token):
     return token
 
 def check_email_input(email):
-    return bool(re.search(r'^(\w|\.)+@(\w+\.)+\w+$', email))
+    return bool(re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email))

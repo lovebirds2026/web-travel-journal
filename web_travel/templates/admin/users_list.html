@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Admin: Users list{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <table>
+    <thead>
+      <tr>
+        <th>Id
+        <th>Username
+        <th>Email
+        <th>Full Name
+        <th>Is Admin?
+        <th>Email confirmed
+        <th>Actions
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for user in users %}
+      <tr>
+          <td>{{ user.id }}
+          <td>{{ user.username }}
+          <td>{{ user.email }}
+          <td>{{ user.full_name }}
+          <td>{{ 'Yes' if user.is_admin else 'No' }}
+          <td>{{ 'Yes' if user.active else 'No' }}
+          <td>
+            <a href="?del={{ user.id }}">{{ 'Activate' if user.deleted else 'Deactivate' }}</a>
+             | Edit
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

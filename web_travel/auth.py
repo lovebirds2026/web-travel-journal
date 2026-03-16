@@ -1,6 +1,7 @@
 import functools
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, \
+    make_response, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import text, exc
 from flask_mail import Message
@@ -90,7 +91,10 @@ def register():
                     html='Click here to confirm your email at Travel Journal:</br> '
                         f'<a href="{link}" target="_blank">{link}</a> '
                 )
-                mail.send(msg)
+                try:
+                    mail.send(msg)
+                except Exception as e: # The mail server could not deliver mail etc.
+                    current_app.logger.warning(e)
                 return redirect(url_for('auth.login'))
 
         [flash(msg, 'error') for msg in errors]

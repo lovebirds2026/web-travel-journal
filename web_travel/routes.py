@@ -35,3 +35,4 @@ def user_account():
             flash(error, 'error')
 
     return render_template('main/user.html')
+

@@ -53,5 +53,7 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bluepr)
     from . import routes
     app.register_blueprint(routes.bluepr)
+    from . import admin
+    app.register_blueprint(admin.bluepr)
 
     return app

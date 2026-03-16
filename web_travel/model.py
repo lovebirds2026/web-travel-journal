@@ -10,8 +10,8 @@ class User(db.Model):
         return f'User {self.username} with email {self.email} .'
 
 
-class Continent(db.Model):
-    ...
+# class Continent(db.Model):
+#     ...
 
 
 
