@@ -906,3 +906,6 @@ nav h1 .header {
   width: 80%;
   vertical-align: top;
 }
+.form_filters > * {
+  display: inline-block;
+}

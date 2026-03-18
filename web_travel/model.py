@@ -6,6 +6,8 @@ from . import db
 class User(db.Model):
     __table__ = db.metadata.tables['user']
 
+    searchable_fields = ('id', 'username', 'email', 'full_name', )
+
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'
 

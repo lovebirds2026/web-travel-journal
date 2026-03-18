@@ -7,6 +7,13 @@
 {% block content %}
   <form method="post">
     <input type="hidden" name="id" id="id" value="{{ user.id }}">
+
+    <label for="username">Username</label>
+    <input name="username" id="username" value="{{ user.username }}">
+
+    <label for="email">Email</label>
+    <input name="email" id="email" value="{{ user.email }}">
+
     <label for="full_name">Full Name</label>
     <input name="full_name" id="full_name" value="{{ user.full_name or '' }}">
     <br/>
