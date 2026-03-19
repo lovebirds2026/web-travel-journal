@@ -7,7 +7,7 @@
 {% block content %}
   <form method="post">
     <label for="full_name">Name</label>
-    <input name="full_name" id="full_name" value="{{ g.user.full_name }}">
+    <input name="full_name" id="full_name" value="{{ g.user.full_name or '' }}">
     <br/>
     <label for="password">New Password</label>
     <input type="password" name="password" id="password">

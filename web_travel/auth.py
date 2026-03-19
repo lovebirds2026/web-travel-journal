@@ -128,6 +128,8 @@ def login():
             error = 'Invalid email.'
         elif not user.active:
             error = 'You must confirm your email first by clicking on the link sent to you when registering.'
+        elif user.deleted:
+            error = 'This account is inactive. Please contact the site admins at office@ai-me.bg for details.'
         elif not check_password_hash(user.password, password):
             error = 'Incorrect password.'
 

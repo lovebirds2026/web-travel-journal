@@ -17,7 +17,7 @@ def index():
 @login_required
 def user_account():
     if request.method == 'POST':
-        g.user.full_name = request.form['full_name'] or g.user.full_name
+        g.user.full_name = request.form['full_name']
         password = request.form['password']
         password2 = request.form['password2']
         error = None
