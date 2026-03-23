@@ -1,11 +1,11 @@
 from flask import render_template, request, flash, redirect, url_for
 from sqlalchemy import update, cast, String
 
-from .. import db
-from .. model import User
-from web_travel.admin import bluepr
-from .. auth import admin_required
-from .. utils import check_email_input
+from ... import db
+from ...models.User import User
+from web_travel.views.admin import bluepr
+from ...utils import check_email_input
+from ..auth import admin_required
 
 @bluepr.route('/users/list', methods=['GET'])# ?del=<int>
 @admin_required

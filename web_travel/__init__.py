@@ -49,11 +49,11 @@ def create_app(test_config=None):
     mail.init_app(app) # set up at configuration time
 
     # blueprints
-    from . import auth # deferred import (moves the import from module load time -> call time)
+    from .views import auth # deferred import (moves the import from module load time -> call time)
     app.register_blueprint(auth.bluepr)
-    from . import routes
+    from .views import routes
     app.register_blueprint(routes.bluepr)
-    from . import admin
+    from .views import admin
     app.register_blueprint(admin.bluepr)
 
     return app

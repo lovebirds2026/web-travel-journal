@@ -1,8 +1,8 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
 from werkzeug.security import generate_password_hash
 
-from . import db
-from .model import User
+from .. import db
+from ..models.User import User
 from .auth import login_required
 
 bluepr = Blueprint('main', __name__) # web_travel.routes

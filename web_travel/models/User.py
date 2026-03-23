@@ -1,4 +1,4 @@
-from . import db
+from .. import db
 
 # define tables with ORM here
 #print(db.metadata) # empty at this point

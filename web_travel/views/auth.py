@@ -6,9 +6,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import text, exc
 from flask_mail import Message
 
-from . import db, mail
-from .model import User
-from .utils import create_token, decode_token, check_email_input
+from .. import db, mail
+from ..models.User import User
+from ..utils import create_token, decode_token, check_email_input
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
 
