@@ -31,15 +31,13 @@ mail = Mail()
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY='dev',
+        SECRET_KEY='placeholder',
     )
 
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
         app.config.from_mapping(test_config)
-
-    app.config.update(SQLALCHEMY_DATABASE_URI = app.config.get('DATABASE_URL'))
 
     # connect Flask with the SQLAlchemy db
     db.init_app(app)
