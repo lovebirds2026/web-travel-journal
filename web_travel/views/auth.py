@@ -50,7 +50,7 @@ def test():
     stmt = db.select(User)
     res1 = db.session.scalar(stmt) # scalar = execute + scalars + first
     #print(vars(res1))
-    return f'Module {__name__}: OK, found user {res[0][:3]}'
+    return f'Module {__name__}: OK, found user {res2[0][:3]}'
 
 
 @bluepr.route('/register', methods=['GET', 'POST'])
@@ -58,7 +58,7 @@ def test():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        full_name = request.form['full_name']
+        full_name = request.form.get('full_name') # when testing, all fields need to be submitted
         email = request.form['email']
         password = request.form['password']
         password2 = request.form['password2']
@@ -83,6 +83,9 @@ def register():
                     'You can login after you verify your email.')
                 # send email confirmation link
                 token = create_token({'user_id': new_user.id}, 60 * 60)
+                if current_app.testing:
+                    return make_response({'token': token})
+
                 link = url_for('auth.confirm_email', _external=True, t=token)
                 msg = Message(
                     'Travel Journal account email confirmation',

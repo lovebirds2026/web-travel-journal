@@ -6,6 +6,7 @@ from flask import Flask
 from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from instance.config import *
 
 log_path = os.path.join(os.path.dirname(__file__), 'logs', 'logfile.log')
 os.makedirs(os.path.dirname(log_path), exist_ok=True)
@@ -28,16 +29,9 @@ db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session au
 
 mail = Mail()
 
-def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='placeholder',
-    )
-
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        app.config.from_mapping(test_config)
+def create_app(test_app=False):
+    app = Flask(__name__)
+    app.config.from_object(TestingConfig if test_app else Config)
 
     # connect Flask with the SQLAlchemy db
     db.init_app(app)

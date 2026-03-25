@@ -17,7 +17,7 @@ dependencies = ["flask>3.1", "Flask-SQLAlchemy>3.1", "psycopg2-binary", "Flask-M
 test = ["pytest>=7.0"]
 
 [tool.pytest.ini_options]
-testpaths = ["web_travel/tests"]
+testpaths = ["tests"]
 cache_dir = ".pytest_cache"
 
 [project.urls]

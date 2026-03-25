@@ -1,13 +1,13 @@
 import jwt
 from flask import current_app
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import time
 import re
 
 JWT_ALGO = 'HS512'
 
 def create_token(payload: dict, seconds=3600):
-    exp = datetime.utcnow() + timedelta(seconds=seconds)
+    exp = datetime.now(UTC) + timedelta(seconds=seconds)
     payload.update({'exp': exp})
 
     token = jwt.encode(payload, current_app.secret_key, algorithm=JWT_ALGO)
