@@ -13,6 +13,8 @@ def flask_client():
     # hack fix for SQLAlchemy not trusting autoincrement on SQLite reflected tables
     db.metadata.tables['user'].c.id.nullable = False
 
+    # NB: this can be structured in another way, like return app + return client
+    # and separate 'with' blocks for each where needed. Not sure which is better
     with flask_app.test_client() as testing_client:
         with flask_app.app_context():
             # the with block is suspended and active in the tests!
@@ -20,17 +22,17 @@ def flask_client():
 
 
 # workaround for not having to deferred import reflected User model in each test function
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def User(flask_client):
     from web_travel.models.User import User # the good ole' deferred import trick
     return User
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def init_database(User):
     db.create_all()
 
-    user1 = User(email='patkennedy79o_o_@gmail.com', password='x', username='Kori')
+    user1 = User(email='patkennedy79o_o_@gmail.com', password='x', username='Kori', is_admin=True)
     user2 = User(email='bali234451234556@gmail.com', password='z', username='Bali')
     db.session.add(user1)
     db.session.add(user2)

@@ -26,7 +26,7 @@ def user_account():
             if password != password2:
                 error = 'Passwords do not match.'
             else:
-                g.user.password = generate_password_hash(password)
+                g.user.set_password(password)
 
         if not error:
             db.session.commit()

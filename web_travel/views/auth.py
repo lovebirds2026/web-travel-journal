@@ -2,7 +2,6 @@ import functools
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, \
     make_response, current_app
-from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import text, exc
 from flask_mail import Message
 
@@ -72,8 +71,7 @@ def register():
 
         if not errors:
             try:
-                new_user = User(username=username, password=generate_password_hash(password),
-                    email=email, full_name=full_name)
+                new_user = User(username=username, password=password, email=email, full_name=full_name)
                 db.session.add(new_user)
                 db.session.commit()
             except db.exc.IntegrityError:
@@ -133,7 +131,7 @@ def login():
             error = 'You must confirm your email first by clicking on the link sent to you when registering.'
         elif user.deleted:
             error = 'This account is inactive. Please contact the site admins at office@ai-me.bg for details.'
-        elif not check_password_hash(user.password, password):
+        elif not user.check_password(password):
             error = 'Incorrect password.'
 
         if error is None:
@@ -191,7 +189,7 @@ def reset_password():
 
         if not error:
             user = db.session.get(User, token['user_id'])
-            user.password = generate_password_hash(password)
+            user.set_password(password)
             db.session.commit()
             flash('Password changed successfully. You can now login.')
             return redirect(url_for('auth.login'))
