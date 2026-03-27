@@ -1,13 +1,12 @@
 import functools
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, \
-    make_response, current_app
-from sqlalchemy import text, exc
-from flask_mail import Message
+    make_response
+from sqlalchemy import text
 
-from .. import db, mail
+from .. import db
 from ..models.User import User
-from ..utils import create_token, decode_token, check_email_input
+from ..utils import decode_token
 
 bluepr = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -49,56 +48,31 @@ def test():
     stmt = db.select(User)
     res1 = db.session.scalar(stmt) # scalar = execute + scalars + first
     #print(vars(res1))
-    return f'Module {__name__}: OK, found user {res2[0][:3]}'
+    return make_response(f'Module {__name__}: OK, found user {res2[0][:3]}')
 
 
 @bluepr.route('/register', methods=['GET', 'POST'])
 @guest_required
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        full_name = request.form.get('full_name') # when testing, all fields need to be submitted
-        email = request.form['email']
-        password = request.form['password']
-        password2 = request.form['password2']
-        errors = []
-
-        if not username: errors.append('Username is required')
-        if not email: errors.append('Email is required')
-        elif not check_email_input(email): errors.append('Invalid email format.')
-        if not password: errors.append('Password is required')
-        if password != password2: errors.append('Passwords do not match')
-
+        errors, new_user = User.create(request.form)
         if not errors:
             try:
-                new_user = User(username=username, password=password, email=email, full_name=full_name)
                 db.session.add(new_user)
                 db.session.commit()
             except db.exc.IntegrityError:
-                errors.append(f'User with email {email} already exists.')
+                errors.append(f'User with email {new_user.email} already exists.')
             else:
-                flash(f'User {new_user.username} successfully created. '
-                    'You can login after you verify your email.')
-                # send email confirmation link
-                token = create_token({'user_id': new_user.id}, 60 * 60)
-                if current_app.testing:
-                    return make_response({'token': token})
+                if email_sent := new_user.send_email_confirmation_link():
+                    flash(f'User {new_user.username} successfully created. '
+                        'You can login after you verify your email.')
+                    return redirect(url_for('auth.login'))
 
-                link = url_for('auth.confirm_email', _external=True, t=token)
-                msg = Message(
-                    'Travel Journal account email confirmation',
-                    sender='office@ai-me.bg',
-                    recipients=[new_user.email],
-                    html='Click here to confirm your email at Travel Journal:</br> '
-                        f'<a href="{link}" target="_blank">{link}</a> '
-                )
-                try:
-                    mail.send(msg)
-                except Exception as e: # The mail server could not deliver mail etc.
-                    current_app.logger.warning(e)
-                return redirect(url_for('auth.login'))
-
-        [flash(msg, 'error') for msg in errors]
+                errors.append(f'We could not send an email to {new_user.email}. '
+                    'Please contact the site administrator for more information on '
+                    'resolving the issue.', 'error')
+        for msg in errors:
+            flash(msg, 'error')
 
     return render_template('auth/register.html', form=request.form)
 
@@ -153,21 +127,8 @@ def request_password_reset():
         user = db.session.scalar(stmt)
 
         if user is not None:
-            # send email confirmation link
-            token = create_token({'user_id': user.id}, 30 * 60) # 30min expiration
-            link = url_for('auth.reset_password', _external=True, t=token)
-            msg = Message(
-                'Travel Journal reset password link',
-                sender='office@ai-me.bg',
-                recipients=[user.email],
-                html='Click here to reset your password at Travel Journal:</br> '
-                    'This link will be valid for 30 minutes.</br> '
-                    f'<a href="{link}" target="_blank">{link}</a> '
-            )
-            mail.send(msg)
-
+            user.send_reset_password_link()
         flash('You will receive an email reset link if you are registered with this address.')
-
     return render_template('auth/requestpasswordreset.html')
 
 
@@ -184,8 +145,10 @@ def reset_password():
         password2 = request.form['password2']
         error = None
 
-        if not password or not password2: error = 'Both Password fields are required'
-        elif password != password2: error = 'Passwords do not match'
+        if not password or not password2:
+            error = 'Both Password fields are required'
+        elif password != password2:
+            error = 'Passwords do not match'
 
         if not error:
             user = db.session.get(User, token['user_id'])

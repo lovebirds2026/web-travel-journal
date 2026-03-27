@@ -16,13 +16,13 @@ def test_register_incorrect_data(flask_client):
         'password': 'password',
         'password2': 'password',
     }
-    print(g.user)
+
     # missing username
     data = dict(base_data)
     data['username'] = ''
     response = flask_client.post('/auth/register', data=data, follow_redirects=True)
     assert response.request.path == '/auth/register'
-    assert 'is required' in response.text
+    assert 'Username is required' in response.text
 
     # invalid email
     data = dict(base_data)
@@ -36,7 +36,7 @@ def test_register_incorrect_data(flask_client):
     data['password'] = data['password2'] = ''
     response = flask_client.post('/auth/register', data=data, follow_redirects=True)
     assert response.request.path == '/auth/register'
-    assert 'is required' in response.text
+    assert 'Password is required' in response.text
 
     # different passwords
     data = dict(base_data)
@@ -46,7 +46,7 @@ def test_register_incorrect_data(flask_client):
     assert 'do not match' in response.text
 
 
-def test_register_emailconf_login(flask_client):
+def test_register_emailconf_login(flask_client, User):
     email, password = 'office@ai-me.bg', 'password'
     response_register = flask_client.post('/auth/register', follow_redirects=True, data={
         'username': 'testy1',
@@ -56,7 +56,7 @@ def test_register_emailconf_login(flask_client):
         'password2': password,
     })
     assert response_register.status_code == 200
-    token = response_register.json['token'] # register returns the token if app.testing=True
+    assert response_register.request.path == '/auth/login'
 
     # try logging in and failing
     response_login_fail = flask_client.post('/auth/login', follow_redirects=True,
@@ -65,7 +65,10 @@ def test_register_emailconf_login(flask_client):
     assert 'confirm your email first' in response_login_fail.text
     assert session.get('user_id') is None
 
-    # confirm email
+    # confirm email with token
+    stmt = db.select(User).order_by(User.id.desc())
+    user = db.session.scalars(stmt).first()
+    token = create_token({'user_id': user.id}, 5 * 60)
     response_confirm_email = flask_client.get(f'/auth/confirm/{token}', follow_redirects=True)
     assert response_confirm_email.request.path == '/auth/login'
     assert 'confirmed' in response_confirm_email.text

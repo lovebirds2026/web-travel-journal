@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from instance.config import *
 
+# configure root logging
 log_path = os.path.join(os.path.dirname(__file__), 'logs', 'logfile.log')
 os.makedirs(os.path.dirname(log_path), exist_ok=True)
 logging.basicConfig(
