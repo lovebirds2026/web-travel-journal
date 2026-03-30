@@ -1,3 +1,4 @@
+# coverage run -m pytest | coverage report
 # flags -v -s (print) -k (function) --last-failed  --setup-show!! 
 from flask_mail import Message
 

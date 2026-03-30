@@ -1,4 +1,6 @@
 <!doctype html>
+{% set active_page = "index" %}
+
 <title>{% block title %}{% endblock %}{{ title }} - Web Travel Journal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lovebirds_ico.ico') }}">
@@ -12,20 +14,28 @@
   <ul>
     {% if g.user %}
       <li><span>Heyya, {{ g.user['full_name'] or g.user['username'] }}</span>
-      <li><a href="{{ url_for('main.index') }}">Home</a>
-      <li><a href="{{ url_for('main.user_account') }}">Account Management</a>
+      <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a>
+      <li class="{{ 'active' if request.path == '/user' }}"><a href="{{ url_for('main.user_account') }}">Account Management</a>
       {% if g.user.is_admin %}
-      <li><a href="{{ url_for('admin.list_users') }}">Admin</a>
+      <li class="{{ 'active' if request.path.startswith('/admin') }}"><a href="{{ url_for('admin.list_users') }}">Admin</a>
       {% endif %}
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}
-      <li><a href="{{ url_for('main.index') }}">Home</a>
-      <li><a href="{{ url_for('auth.register') }}">Register</a>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a>
+      <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a>
+      <li class="{{ 'active' if request.path == '/auth/register' }}"><a href="{{ url_for('auth.register') }}">Register</a>
+      <li class="{{ 'active' if request.path == '/auth/login' }}"><a href="{{ url_for('auth.login') }}">Log In</a>
     {% endif %}
-
   </ul>
+
+  <!-- Admin submenu -->
+  {% if g.user.is_admin and request.path.startswith('/admin') %}
+  <ul>Admin menu:
+    <li class="{{ 'active' if request.path == '/admin/users/list' }}"><a href="{{ url_for('admin.list_users') }}">Users</a>
+    <li class="{{ 'active' if request.path == '/admin/users/xx' }}"><a href="{{ url_for('admin.list_users') }}">MenuItem2</a> 
+  </ul>
+  {% endif %}
 </nav>
+
 <section class="content">
   <header>
     {{ header }}

@@ -897,6 +897,9 @@ nav ul li {
   display: inline;
   margin-right: 2em;
 }
+nav ul li.active {
+  font-weight: bold;
+}
 
 nav h1 div {
   display: inline-block;

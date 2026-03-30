@@ -60,7 +60,9 @@
           <td>{{ 'Yes' if user.is_admin else 'No' }}
           <td>{{ 'Yes' if user.active else 'No' }}
           <td>
-            <a href="?del={{ user.id }}">{{ 'Activate' if user.deleted else 'Deactivate' }}</a> | 
+            <a href="{{ url_for('admin.list_users', del=user.id, **request.args) }}">
+              {{ 'Activate' if user.deleted else 'Deactivate' }}
+            </a> | 
             <a href="/admin/users/edit?userID={{ user.id }}">Edit</a>
           </td>
       </tr>
