@@ -58,6 +58,10 @@ def test_register_emailconf_login(flask_client, User):
     assert response_register.status_code == 200
     assert response_register.request.path == '/auth/login'
 
+    # get user object for consequent tests
+    stmt = db.select(User).order_by(User.id.desc())
+    user = db.session.scalars(stmt).first()
+
     # try logging in and failing
     response_login_fail = flask_client.post('/auth/login', follow_redirects=True,
         data={'email': email, 'password': password})
@@ -66,8 +70,6 @@ def test_register_emailconf_login(flask_client, User):
     assert session.get('user_id') is None
 
     # confirm email with token
-    stmt = db.select(User).order_by(User.id.desc())
-    user = db.session.scalars(stmt).first()
     token = create_token({'user_id': user.id}, 5 * 60)
     response_confirm_email = flask_client.get(f'/auth/confirm/{token}', follow_redirects=True)
     assert response_confirm_email.request.path == '/auth/login'

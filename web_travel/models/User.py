@@ -4,6 +4,7 @@ from flask_mail import Message
 
 from .. import db, mail
 from ..utils import create_token, decode_token, check_email_input
+from instance.config import Config
 
 # define tables with ORM here
 #print(db.metadata) # empty at this point
@@ -37,9 +38,11 @@ class User(Base):
     def send_email_confirmation_link(self):
         token = create_token({'user_id': self.id}, 60 * 60)
         link = url_for('auth.confirm_email', _external=True, t=token)
+        deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
+
         msg = Message(
-            'Travel Journal account email confirmation',
-            sender='office@ai-me.bg',
+            'Travel Journal account email confirmation' + deployment_suffix,
+            sender=['Travel Journal' + deployment_suffix, 'office@ai-me.bg'],
             recipients=[self.email],
             html='Click here to confirm your email at Travel Journal:</br> '
                 f'<a href="{link}" target="_blank">{link}</a> '
@@ -54,9 +57,11 @@ class User(Base):
     def send_reset_password_link(self):
         token = create_token({'user_id': self.id}, 30 * 60) # 30min expiration
         link = url_for('auth.reset_password', _external=True, t=token)
+        deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
+
         msg = Message(
-            'Travel Journal reset password link',
-            sender='office@ai-me.bg',
+            'Travel Journal reset password link' + deployment_suffix,
+            sender=['Travel Journal' + deployment_suffix, 'office@ai-me.bg'],
             recipients=[self.email],
             html='Click here to reset your password at Travel Journal:</br> '
                 'This link will be valid for 30 minutes.</br> '
