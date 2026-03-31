@@ -17,23 +17,17 @@ def list_users():
         db.session.commit()
         flash(f'User {user.username} status changed to {"deleted" if user.deleted else "active"}.')
 
-    # Dropdown boolean filters
-    filters = {}
+    filters = {} # Dropdown boolean filters
     is_admin = request.args.get('is_admin')
     if is_admin:
-        filters['is_admin'] = is_admin == '1' # WOW!
+        filters['is_admin'] = True if is_admin == '1' else False
     deleted = request.args.get('deleted')
     if deleted:
-        filters['deleted'] = deleted == '1'
-    stmt = db.select(User).filter_by(**filters).order_by(User.id)
-
-    # Text search in field
-    search_text = request.args.get('search_text')
+        filters['deleted'] = True if deleted == '1' else False
+    search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
-    if search_text and search_field and search_field in User.searchable_fields:
-        user_field = cast(getattr(User, search_field), String) # to make id searchable
-        stmt = stmt.where(user_field.icontains(search_text))
 
+    stmt = User.search_and_filter(filters, search_field, search_text)
     users = db.session.scalars(stmt).all()
     return render_template('admin/users_list.html', users=users)
 

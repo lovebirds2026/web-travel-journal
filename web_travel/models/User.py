@@ -3,23 +3,14 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Message
 
 from .. import db, mail
+from . import Base
 from ..utils import create_token, decode_token, check_email_input
 from instance.config import Config
-
-# define tables with ORM here
-#print(db.metadata) # empty at this point
-
-class Base(db.Model):
-    __abstract__ = True
-
-    def xx(self):
-        return 'xx -- xx'
-
 
 class User(Base):
     __table__ = db.metadata.tables['user']
 
-    searchable_fields = ('id', 'username', 'email', 'full_name', )
+    _searchable_fields = ('id', 'username', 'email', 'full_name', )
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'
@@ -93,10 +84,3 @@ class User(Base):
     def hash_password(password_plaintext):
         return generate_password_hash(password_plaintext)
 
-
-# class Continent(Base):
-#     ...
-
-
-
-# db.create_all()

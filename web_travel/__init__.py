@@ -49,4 +49,7 @@ def create_app(test_app=False):
     from .views import admin
     app.register_blueprint(admin.bluepr)
 
+    with app.app_context(): # models need to be loaded by now
+        db.create_all()
+
     return app
