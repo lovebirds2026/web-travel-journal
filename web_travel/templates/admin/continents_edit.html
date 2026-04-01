@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Admin: Add or edit continent{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <input type="hidden" name="id" id="id" value="{{ continent.id }}">
+
+    <label for="name">Name</label>
+    <input name="name" id="name" value="{{ continent.name }}">
+
+    <label for="status">Status</label>
+    <select name="status" id="status">
+    {% for status in field_statuses %}
+      <option value="{{ status }}" {{ 'selected' if continent and continent.status == status or not continent and status == 'active' }}>{{ status }}
+    {% endfor %}
+    </select>
+    <br/>
+
+    <label for="deleted">Deleted</label>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if continent.deleted else '' }}>
+    <br/><br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

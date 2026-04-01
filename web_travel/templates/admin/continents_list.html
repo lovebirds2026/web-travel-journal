@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Admin: Continents list{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="get" class="form_filters">
+    <label for="status">Status:</label>
+    <select name="status" id="status">
+      <option value="">All
+    {% for status in field_statuses %}
+      <option value="{{ status }}" {{ 'selected' if request.args.get('status') == status }}>{{ status }}
+    {% endfor %}
+    </select>
+
+    <label for="deleted">Deleted:</label>
+    <select name="deleted" id="deleted">
+      <option value="">All
+      <option value="1" {{ 'selected' if request.args.get('deleted') == '1' }}>Yes
+      <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
+    </select>
+
+    <!-- Search text with field select with options -->
+    <label for="search_text">Search:</label>
+    <input name="search_text" id="search_text" value="{{ request.args.get('search_text') or '' }}">
+    <label for="search_field">in</label>
+    <select name="search_field" id="search_field">
+      <option value="">-- Select Field --
+      <option value="name" {{ 'selected' if request.args.get('search_field') == 'name' }}>Name
+      <option value="id" {{ 'selected' if request.args.get('search_field') == 'id' }}>Id
+    </select>
+
+    <input type="submit" value="Apply filter">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="{{ request.base_url }}"><button type="button">Reset </button></a>
+  </form>
+  <br/>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Id
+        <th>Name
+        <th>Status
+        <th>Actions
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for continent in continents %}
+      <tr>
+          <td>{{ continent.id }}
+          <td>{{ continent.name }}
+          <td>{{ continent.status }}
+          <td>
+            <a href="{{ url_for('admin.list_continents', del=continent.id, **request.args) }}">
+              {{ 'Undelete' if continent.deleted else 'Delete' }}
+            </a> | 
+            <a href="/admin/continents/edit?continentID={{ continent.id }}">Edit</a>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -31,7 +31,8 @@
   {% if g.user.is_admin and request.path.startswith('/admin') %}
   <ul>Admin menu:
     <li class="{{ 'active' if request.path == '/admin/users/list' }}"><a href="{{ url_for('admin.list_users') }}">Users</a>
-    <li class="{{ 'active' if request.path == '/admin/users/xx' }}"><a href="{{ url_for('admin.list_users') }}">MenuItem2</a> 
+    <li class="{{ 'active' if request.path == '/admin/continents/list' }}"><a href="{{ url_for('admin.list_continents') }}">Continents:</a> 
+    <li><a href="{{ url_for('admin.add_edit_continent') }}">Add</a> 
   </ul>
   {% endif %}
 </nav>

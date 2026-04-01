@@ -1,11 +1,12 @@
 from flask import render_template, request, flash, redirect, url_for
-from sqlalchemy import update, cast, String
+from sqlalchemy import update
 
 from ... import db
-from ...models.User import User
 from web_travel.views.admin import bluepr
-from ...utils import check_email_input
 from ..auth import admin_required
+from ...models.User import User
+from ...utils import check_email_input
+
 
 @bluepr.route('/users/list', methods=['GET'])# ?del=<int>
 @admin_required
@@ -20,10 +21,10 @@ def list_users():
     filters = {} # Dropdown boolean filters
     is_admin = request.args.get('is_admin')
     if is_admin:
-        filters['is_admin'] = True if is_admin == '1' else False
+        filters['is_admin'] = is_admin == '1'
     deleted = request.args.get('deleted')
     if deleted:
-        filters['deleted'] = True if deleted == '1' else False
+        filters['deleted'] = deleted == '1'
     search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
 

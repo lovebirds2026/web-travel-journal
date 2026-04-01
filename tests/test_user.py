@@ -1,6 +1,6 @@
 from web_travel import db
 from web_travel.utils import create_token
-from flask import session, g
+from flask import session
 
 # integration tests
 def test_index(flask_client):

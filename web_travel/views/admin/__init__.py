@@ -2,5 +2,5 @@ from flask import Blueprint
 
 bluepr = Blueprint('admin', __name__, url_prefix='/admin') # web_travel.admin
 
-from . import views # or from web_travel.admin (absolute path), deferred import too
-# registers the routes onto the blueprint (decorators run at import time)
+# register the routes onto the blueprint (decorators run at import time)
+from . import users, continents # or from web_travel.admin (absolute path)
