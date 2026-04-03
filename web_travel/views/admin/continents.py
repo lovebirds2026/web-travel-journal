@@ -37,7 +37,7 @@ def list_continents():
 def add_edit_continent():
     if request.method == 'POST':
         name = request.form.get('name')
-        if not name.replace(' ', '_').isidentifier():
+        if not name:
             flash('Invalid continent name.', 'error')
         else:
             values_dict = dict(

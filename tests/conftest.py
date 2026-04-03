@@ -4,6 +4,7 @@ import sqlite3
 from sqlalchemy import text
 from web_travel import create_app, db
 from instance.config import TestingConfig
+from web_travel.models.Continent import Continent
 
 
 @pytest.fixture(scope='session')
@@ -36,6 +37,10 @@ def init_database(User):
     user2 = User(email='bali234451234556@gmail.com', password='z', username='Bali')
     db.session.add(user1)
     db.session.add(user2)
+
+    continent1 = Continent(name='North America')
+    db.session.add(continent1)
+
     db.session.commit()
 
     yield # pause point - testing happens here
