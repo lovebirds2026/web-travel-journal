@@ -35,7 +35,7 @@ html {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
   line-height: 1.4;
-  max-width: 800px;
+  max-width: 90%; /* DD: edited from 800px */
   margin: 20px auto;
   padding: 0 10px;
   word-wrap: break-word;
@@ -887,8 +887,28 @@ body > footer {
 
 /* custom CSS */
 .flash > * {
+  font-size: 1.3em;
   color: darkgreen;
 }
 .flash.error > * {
   color: red;
+}
+nav ul li {
+  display: inline;
+  margin-right: 2em;
+}
+nav ul li.active {
+  font-weight: bold;
+}
+
+nav h1 div {
+  display: inline-block;
+}
+nav h1 .header {
+  text-align: center;
+  width: 80%;
+  vertical-align: top;
+}
+.form_filters > * {
+  display: inline-block;
 }

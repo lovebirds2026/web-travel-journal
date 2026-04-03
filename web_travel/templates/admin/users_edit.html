@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Admin: Edit user{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <input type="hidden" name="id" id="id" value="{{ user.id }}">
+
+    <label for="username">Username</label>
+    <input name="username" id="username" value="{{ user.username }}">
+
+    <label for="email">Email</label>
+    <input name="email" id="email" value="{{ user.email }}">
+
+    <label for="full_name">Full Name</label>
+    <input name="full_name" id="full_name" value="{{ user.full_name or '' }}">
+    <br/>
+    <label for="active">Active?</label>
+    <input type="checkbox" name="active" id="active" {{ 'checked' if user.active else '' }}>
+    <br/>
+    <label for="is_admin">Is Admin?</label>
+    <input type="checkbox" name="is_admin" id="is_admin" {{ 'checked' if user.is_admin else '' }}>
+    <br/>
+    <label for="deleted">Deleted</label>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if user.deleted else '' }}>
+    <br/><br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

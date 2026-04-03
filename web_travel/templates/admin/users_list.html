@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Admin: Users list{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="get" class="form_filters">
+    <label for="is_admin">Is Admin:</label>
+    <select name="is_admin" id="is_admin">
+      <option value="">All
+      <option value="1" {{ 'selected' if request.args.get('is_admin') == '1' }}>Yes
+      <option value="0" {{ 'selected' if request.args.get('is_admin') == '0' }}>No
+    </select>
+
+    <label for="deleted">Deleted:</label>
+    <select name="deleted" id="deleted">
+      <option value="">All
+      <option value="1" {{ 'selected' if request.args.get('deleted') == '1' }}>Yes
+      <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
+    </select>
+
+    <!-- Search text with field select with options -->
+    <label for="search_text">Search:</label>
+    <input name="search_text" id="search_text" value="{{ request.args.get('search_text') or '' }}">
+    <label for="search_field">in</label>
+    <select name="search_field" id="search_field">
+      <option value="">-- Select Field --
+      <option value="username" {{ 'selected' if request.args.get('search_field') == 'username' }}>Username
+      <option value="email" {{ 'selected' if request.args.get('search_field') == 'email' }}>Email
+      <option value="full_name" {{ 'selected' if request.args.get('search_field') == 'full_name' }}>Full Name
+      <option value="id" {{ 'selected' if request.args.get('search_field') == 'id' }}>Id
+    </select>
+
+    <input type="submit" value="Apply filter">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="{{ request.base_url }}"><button type="button">Reset </button></a>
+  </form>
+  <br/>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Id
+        <th>Username
+        <th>Email
+        <th>Full Name
+        <th>Is Admin?
+        <th>Email confirmed
+        <th>Actions
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for user in users %}
+      <tr>
+          <td>{{ user.id }}
+          <td>{{ user.username }}
+          <td>{{ user.email }}
+          <td>{{ user.full_name or '' }}
+          <td>{{ 'Yes' if user.is_admin else 'No' }}
+          <td>{{ 'Yes' if user.active else 'No' }}
+          <td>
+            <a href="{{ url_for('admin.list_users', del=user.id, **request.args) }}">
+              {{ 'Activate' if user.deleted else 'Deactivate' }}
+            </a> | 
+            <a href="/admin/users/edit?userID={{ user.id }}">Edit</a>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

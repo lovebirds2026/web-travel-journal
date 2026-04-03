@@ -6,7 +6,9 @@ from flask import Flask
 from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from instance.config import *
 
+# configure root logging
 log_path = os.path.join(os.path.dirname(__file__), 'logs', 'logfile.log')
 os.makedirs(os.path.dirname(log_path), exist_ok=True)
 logging.basicConfig(
@@ -28,18 +30,9 @@ db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session au
 
 mail = Mail()
 
-def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-    )
-
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        app.config.from_mapping(test_config)
-
-    app.config.update(SQLALCHEMY_DATABASE_URI = app.config.get('DATABASE_URL'))
+def create_app(test_app=False):
+    app = Flask(__name__)
+    app.config.from_object(TestingConfig if test_app else Config)
 
     # connect Flask with the SQLAlchemy db
     db.init_app(app)
@@ -49,13 +42,14 @@ def create_app(test_config=None):
     mail.init_app(app) # set up at configuration time
 
     # blueprints
-    from . import auth # deferred import (moves the import from module load time -> call time)
+    from .views import auth # deferred import (moves the import from module load time -> call time)
     app.register_blueprint(auth.bluepr)
+    from .views import routes
+    app.register_blueprint(routes.bluepr)
+    from .views import admin
+    app.register_blueprint(admin.bluepr)
 
-    @app.route('/')
-    def index():
-        return 'Lovebirds® 2026 Dev domain on Flask 3.1.2 running on Python 3.13'
+    with app.app_context(): # models need to be loaded by now
+        db.create_all()
 
     return app
-
-
