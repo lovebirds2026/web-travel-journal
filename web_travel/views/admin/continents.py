@@ -52,7 +52,7 @@ def add_edit_continent():
             else: # Add
                 new_continent = Continent(**values_dict)
                 db.session.add(new_continent)
-            
+
             db.session.commit()
             flash('Continent data saved.')
 

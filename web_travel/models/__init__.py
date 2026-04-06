@@ -6,9 +6,6 @@ from datetime import datetime, UTC
 
 from .. import db
 
-def test_tz():
-    return datetime.now(UTC)
-
 class Base(db.Model):
     __abstract__ = True
 
@@ -19,7 +16,8 @@ class Base(db.Model):
     cid: Mapped[int] = mapped_column(nullable=True)
     ct: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     uid: Mapped[int] = mapped_column(nullable=True)
-    ut: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=test_tz)
+    ut: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), 
+        onupdate=lambda: datetime.now(UTC))
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())
 
 

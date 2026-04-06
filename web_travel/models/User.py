@@ -4,11 +4,12 @@ from flask_mail import Message
 
 from .. import db, mail
 from . import Base
-from ..utils import create_token, decode_token, check_email_input
+from ..utils import create_token, check_email_input
 from instance.config import Config
 
 class User(Base):
     __table__ = db.metadata.tables['user']
+    # to remove reflection can manually describe all fields here.
 
     _searchable_fields = ('id', 'username', 'email', 'full_name', )
 

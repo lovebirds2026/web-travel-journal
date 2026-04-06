@@ -16,7 +16,7 @@ class Continent(Base):
     __table_args__ = (
         UniqueConstraint('name', name='U_name'),
         Index('IDX_status', 'status'),
-        {'keep_existing': True, }, # or extend_existing
+        {'extend_existing': True, },
     )
 
     _searchable_fields = ('id', 'name', )
