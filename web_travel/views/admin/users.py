@@ -19,12 +19,11 @@ def list_users():
         flash(f'User {user.username} status changed to {"deleted" if user.deleted else "active"}.')
 
     filters = {} # Dropdown boolean filters
-    is_admin = request.args.get('is_admin')
-    if is_admin:
+    if is_admin := request.args.get('is_admin'):
         filters['is_admin'] = is_admin == '1'
-    deleted = request.args.get('deleted')
-    if deleted:
+    if deleted := request.args.get('deleted'):
         filters['deleted'] = deleted == '1'
+
     search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
 

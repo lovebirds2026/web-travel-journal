@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash
 from sqlalchemy import update
 
 from ... import db
@@ -18,12 +18,11 @@ def list_continents():
         flash(f'Continent {continent.name} status changed to {"deleted" if continent.deleted else "active"}.')
 
     filters = {} # Dropdown boolean filters
-    status = request.args.get('status')
-    if status:
+    if status := request.args.get('status'):
         filters['status'] = status
-    deleted = request.args.get('deleted')
-    if deleted:
+    if deleted := request.args.get('deleted'):
         filters['deleted'] = deleted == '1'
+
     search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
 
@@ -56,7 +55,7 @@ def add_edit_continent():
             db.session.commit()
             flash('Continent data saved.')
 
-    continent_id = request.args.get('continentID') or None
+    continent_id = request.args.get('continentID', 0)
     continent = db.session.get(Continent, continent_id)
 
     return render_template('admin/continents_edit.html', continent=continent, field_statuses=FieldStatus)

@@ -3,8 +3,14 @@ from sqlalchemy import sql, func, DateTime, cast, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from datetime import datetime, UTC
+from enum import StrEnum
 
 from .. import db
+
+class FieldStatus(StrEnum):
+    NEW = 'new'
+    ACTIVE = 'active'
+    REJECTED = 'rejected'
 
 class Base(db.Model):
     __abstract__ = True
