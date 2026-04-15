@@ -9,7 +9,7 @@
     <input type="hidden" name="id" id="id" value="{{ continent.id }}">
 
     <label for="name">Name</label>
-    <input name="name" id="name" value="{{ continent.name or request.form.get('name') }}">
+    <input name="name" id="name" value="{{ continent.name or request.form.get('name', '') }}">
 
     <label for="status">Status</label>
     <select name="status" id="status">
