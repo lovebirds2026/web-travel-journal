@@ -1,5 +1,4 @@
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
-from werkzeug.security import generate_password_hash
+from flask import Blueprint, flash, g, render_template, request, session, make_response
 
 from .. import db
 from ..models.User import User
@@ -9,8 +8,12 @@ bluepr = Blueprint('main', __name__) # web_travel.routes
 
 @bluepr.route('/')
 def index():
-    header = 'Lovebirds® 2026 Dev domain on Flask 3.1.2 running on Python 3.13'
-    return render_template('base.html', title='Homepage', header=header)
+    return render_template('main/index.html', title='Home')
+
+
+@bluepr.route('/travels')
+def travels():
+    return render_template('main/travels.html')
 
 
 @bluepr.route('/user', methods=['GET', 'POST'])
