@@ -63,7 +63,9 @@
           <td>{{ country.continent.name }}
           <td>{{ country.status }}
           <td>
-            <a href="{{ url_for('admin.list_countries', del=country.id, **request.args) }}">
+            {% set args = dict(request.args) %}
+            {% set _ = args.update({'del': country.id}) %}
+            <a href="{{ url_for('admin.list_countries', **args) }}">
               {{ 'Undelete' if country.deleted else 'Delete' }}
             </a> | 
             <a href="/admin/countries/edit?countryID={{ country.id }}">Edit</a>

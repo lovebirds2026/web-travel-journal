@@ -939,4 +939,12 @@ nav .top-row .account-menu ul {
 .form_filters > * {
   display: inline-block;
 }
+form > input#my {
+  vertical-align: unset;
+}
 
+@media (min-width:769px) {
+  textarea {
+    max-width: 60%;
+  }
+}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Add or edit place{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <input type="hidden" name="id" id="id" value="{{ place.id }}">
+
+    <label for="name">Name</label>
+    <input name="name" id="name" value="{{ place.name or request.form.get('name', '') }}">
+
+    <label for="description">Description</label>
+    <textarea name="description" id="description">{{ place.description or request.form.get('description', '') }}</textarea>
+
+    <label for="country">Country</label>
+    <select name="country_id" id="country_id">
+      <option value="">-- Please select --</option>
+    {% for country in countries %}
+      <option value="{{ country.id }}" {{ 'selected' if place and place.countryFK == country.id }}>{{ country.name }}
+    {% endfor %}
+    </select>
+
+    <label for="status">Status</label>
+    <select name="status" id="status" {{ 'disabled' if not g.user.is_admin }}>
+    {% for status in field_statuses %}
+      <option value="{{ status }}" {{ 'selected' if place and place.status == status or not place and status == 'new' }}>{{ status }}
+    {% endfor %}
+    </select>
+    <br/>
+
+    <label for="deleted">Deleted</label>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if place.deleted }}>
+    <br/><br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

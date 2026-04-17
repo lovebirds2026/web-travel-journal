@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Admin: Continents list{% endblock %}</h2>
+  <h2>{% block title %}Places{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
@@ -21,6 +21,14 @@
       <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
     </select>
 
+    <label for="country_id">Country:</label>
+    <select name="country_id" id="country_id">
+      <option value="">All
+    {% for country in countries %}
+      <option value="{{ country.id }}" {{ 'selected' if request.args.get('country_id') | int == country.id }}>{{ country.name }}
+    {% endfor %}
+    </select>
+
     <!-- Search text with field select with options -->
     <label for="search_text">Search:</label>
     <input name="search_text" id="search_text" value="{{ request.args.get('search_text') or '' }}">
@@ -28,11 +36,14 @@
     <select name="search_field" id="search_field">
       <option value="">-- Select Field --
       <option value="name" {{ 'selected' if request.args.get('search_field') == 'name' }}>Name
-      <option value="id" {{ 'selected' if request.args.get('search_field') == 'id' }}>Id
+      <option value="description" {{ 'selected' if request.args.get('search_field') == 'description' }}>Description
     </select>
 
+    <label for="my">My places</label>
+    <input type="checkbox" name="my" id="my" {{ 'checked' if request.args.get('my') }}>
+
     <input type="submit" value="Apply filter">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="{{ request.base_url }}"><button type="button">Reset </button></a>
+    <a href="{{ request.base_url }}"><button type="button">Reset</button></a>
   </form>
   <br/>
 
@@ -41,29 +52,32 @@
       <tr>
         <th>Id
         <th>Name
+        <th colspan="5">Description
+        <th>Country
         <th>Status
-        <th>Links
         <th>Actions
       </tr>
     </thead>
 
     <tbody>
-      {% for continent in continents %}
+      {% for place in places %}
       <tr>
-          <td>{{ continent.id }}
-          <td>{{ continent.name }}
-          <td>{{ continent.status }}
+          <td>{{ place.id }}
+          <td>{{ place.name }}
+          <td colspan="5">{{ place.description|truncate(100) }}
+          <td>{{ place.country.name }}
+          <td>{{ place.status }}
           <td>
-            <a href="{{ url_for('admin.list_countries', continent_id=continent.id) }}">
-              Countries
-            </a>
-          <td>
-            {% set args = dict(request.args) %}
-            {% set _ = args.update({'del': continent.id}) %}
-            <a href="{{ url_for('admin.list_continents', **args) }}">
-              {{ 'Undelete' if continent.deleted else 'Delete' }}
-            </a> | 
-            <a href="/admin/continents/edit?continentID={{ continent.id }}">Edit</a>
+            {% if g.user and (g.user.is_admin or place.owner.id == g.user.id) %}
+              {% set args = dict(request.args) %}
+              {% set _ = args.update({'del': place.id}) %}
+              <a href="{{ url_for('main.places', **args) }}">
+                {{ 'Undelete' if place.deleted else 'Delete' }}
+              </a> | 
+              <a href="/places/edit?placeID={{ place.id }}">Edit</a>
+            {% else %}
+            -
+            {% endif %}
           </td>
       </tr>
       {% endfor %}

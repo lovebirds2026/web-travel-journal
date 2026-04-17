@@ -65,7 +65,7 @@ def add_edit_country():
             db.session.commit()
             flash('Country data saved.')
 
-    country_id = request.args.get('countryID', 0)
+    country_id = request.args.get('countryID') or 0
     country = db.session.get(Country, country_id)
     continents = db.session.scalars(db.select(Continent).where(Continent.status == FieldStatus.ACTIVE)
         .order_by(Continent.name)).all()

@@ -55,7 +55,7 @@ def add_edit_continent():
             db.session.commit()
             flash('Continent data saved.')
 
-    continent_id = request.args.get('continentID', 0)
+    continent_id = request.args.get('continentID') or 0
     continent = db.session.get(Continent, continent_id)
 
     return render_template('admin/continents_edit.html', continent=continent, field_statuses=FieldStatus)

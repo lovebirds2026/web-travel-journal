@@ -18,7 +18,8 @@ class Country(Base):
         saEnum(FieldStatus, name='status_enum', values_callable=lambda x: [e.value for e in x]), 
         default=FieldStatus.NEW, index=True)
     continentFK: Mapped[int] = mapped_column(ForeignKey('continent.id'), nullable=True)
-    continent: Mapped['Continent'] = relationship(back_populates='countries')
     
+    continent: Mapped['Continent'] = relationship(back_populates='countries')
+    places: Mapped[list['Place']] = relationship(back_populates='country')
 
 

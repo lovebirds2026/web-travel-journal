@@ -1,4 +1,5 @@
 from flask import current_app, url_for
+from sqlalchemy.orm import Mapped, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Message
 
@@ -12,6 +13,8 @@ class User(Base):
     # to remove reflection can manually describe all fields here.
 
     _searchable_fields = ('id', 'username', 'email', 'full_name', )
+
+    places: Mapped[list['Place']] = relationship(back_populates='owner')
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'
