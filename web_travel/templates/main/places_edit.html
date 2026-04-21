@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+  {{ ckeditor.load() if '.aime.bg' in config['SERVER_NAME'] else ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js')) }}
   <form method="post">
     <input type="hidden" name="id" id="id" value="{{ place.id }}">
 
@@ -12,7 +13,8 @@
     <input name="name" id="name" value="{{ place.name or request.form.get('name', '') }}">
 
     <label for="description">Description</label>
-    <textarea name="description" id="description">{{ place.description or request.form.get('description', '') }}</textarea>
+    {{ ckeditor.create(name='description', value=(request.form.get('description', '') or place.description) ) }}
+    {{ ckeditor.config(name='description', versionCheck=False) }}
 
     <label for="country">Country</label>
     <select name="country_id" id="country_id">

@@ -82,8 +82,8 @@ def add_edit_place():
                 countryFK=country_id,
                 deleted=bool(request.form.get('deleted')),
             )
-            if status := request.form.get('status') and g.user.is_admin:
-                values_dict['status'] = status
+            if g.user.is_admin and request.form.get('status'):
+                values_dict['status'] = request.form.get('status')
 
             if place_id := request.form.get('id', 0): # Update
                 stmt = update(Place).where(Place.id == place_id).values(values_dict)

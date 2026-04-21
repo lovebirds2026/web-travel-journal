@@ -64,7 +64,7 @@
       <tr>
           <td>{{ place.id }}
           <td>{{ place.name }}
-          <td colspan="5">{{ place.description|truncate(100) }}
+          <td colspan="5">{{ place.description|truncate(100) }} {# |safe #}
           <td>{{ place.country.name }}
           <td>{{ place.status }}
           <td>
