@@ -34,3 +34,9 @@ class Base(db.Model):
             field = cast(getattr(cls, search_field), String) # just to practice cast(), not cool with id
             stmt = stmt.where(field.icontains(search_text))
         return stmt.order_by(cls.id.asc())
+
+    @classmethod
+    def get_active(cls): # Note: won't work for all tables, consider Mixin
+        stmt = db.select(cls).where(cls.status == FieldStatus.ACTIVE).order_by(cls.name.asc())
+        return db.session.scalars(stmt).all()
+

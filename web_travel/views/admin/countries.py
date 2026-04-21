@@ -31,8 +31,7 @@ def list_countries():
 
     stmt = Country.search_and_filter(filters, search_field, search_text)
     countries = db.session.scalars(stmt).all()
-    continents = db.session.scalars(db.select(Continent).where(Continent.status == FieldStatus.ACTIVE)
-        .order_by(Continent.name)).all()
+    continents = Continent.get_active()
     return render_template('admin/countries_list.html', countries=countries, field_statuses=FieldStatus,
         continents=continents)
 
@@ -45,7 +44,7 @@ def add_edit_country():
         continent_id = request.form.get('continent_id')
         if not name:
             flash('Invalid country name.', 'error')
-        if not continent_id:
+        elif not continent_id:
             flash('Please assign a continent.', 'error')
         else:
             values_dict = dict(
@@ -67,8 +66,7 @@ def add_edit_country():
 
     country_id = request.args.get('countryID') or 0
     country = db.session.get(Country, country_id)
-    continents = db.session.scalars(db.select(Continent).where(Continent.status == FieldStatus.ACTIVE)
-        .order_by(Continent.name)).all()
+    continents = Continent.get_active()
 
     return render_template('admin/countries_edit.html', country=country, field_statuses=FieldStatus,
         continents=continents)

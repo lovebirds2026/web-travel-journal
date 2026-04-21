@@ -68,13 +68,15 @@
           <td>{{ place.country.name }}
           <td>{{ place.status }}
           <td>
-            {% if g.user and (g.user.is_admin or place.owner.id == g.user.id) %}
+            {% if g.user and g.user.is_admin %}
               {% set args = dict(request.args) %}
               {% set _ = args.update({'del': place.id}) %}
               <a href="{{ url_for('main.places', **args) }}">
                 {{ 'Undelete' if place.deleted else 'Delete' }}
               </a> | 
-              <a href="/places/edit?placeID={{ place.id }}">Edit</a>
+            {% endif %}
+            {% if g.user and (g.user.is_admin or place.owner.id == g.user.id) %}
+              <a href="{{ url_for('main.add_edit_place', placeID=place.id) }}">Edit</a>
             {% else %}
             -
             {% endif %}

@@ -4,7 +4,7 @@ from web_travel import db
 from web_travel.models.Continent import Continent, FieldStatus
 
 def test_select_one_continent_by_search_field(init_database):
-    search_text = 'North '
+    search_text = 'South '
     search_field = 'name'
     stmt = Continent.search_and_filter({}, search_field, search_text)
     res = db.session.scalars(stmt).all()
@@ -12,8 +12,8 @@ def test_select_one_continent_by_search_field(init_database):
 
 def test_default_continent_status_is_new(init_database):
     stmt = Continent.search_and_filter({'status': 'new'})
-    prepopulated_continent = db.session.scalar(stmt.order_by('id'))
-    assert prepopulated_continent.name == 'North America'
+    prepopulated_continent = db.session.scalar(stmt)
+    assert prepopulated_continent.name == 'South America'
 
 def test_change_continent_status(flask_client, init_database):
     continent = db.session.get(Continent, 1)

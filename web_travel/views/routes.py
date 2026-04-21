@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, g, render_template, request, session, make_response, \
     redirect, url_for
 from sqlalchemy import update
+from sqlalchemy.orm import selectinload
 
 from .. import db
 from ..models.User import User
@@ -22,7 +23,7 @@ def travels():
 
 @bluepr.route('/places', methods=['GET'])
 def places():
-    if request.args.get('del'):
+    if g.user and g.user.is_admin and request.args.get('del'):
         place_id = request.args.get('del')
         place = db.get_or_404(Place, place_id)
         place.deleted = not place.deleted
@@ -43,14 +44,16 @@ def places():
     search_field = request.args.get('search_field')
 
     stmt = Place.search_and_filter(filters, search_field, search_text)
+    # eager load relations. Also joinedload(Place.country) or in model: relationship(lazy="selectin")
+    stmt = stmt.options(selectinload(Place.country), selectinload(Place.owner))
+
     if not g.user:
         stmt = stmt.where(Place.status == FieldStatus.ACTIVE, Place.deleted == False)
     elif not g.user.is_admin:
         stmt = stmt.where( (Place.ownerFK == g.user.id) | 
             (Place.status == FieldStatus.ACTIVE) & (Place.deleted == False) )
     places = db.session.scalars(stmt).all()
-    countries = db.session.scalars(db.select(Country).where(Country.status == FieldStatus.ACTIVE)
-        .order_by(Country.name)).all()
+    countries = Country.get_active()
 
     return render_template('main/places.html', places=places, countries=countries, 
         field_statuses=FieldStatus)
@@ -62,7 +65,7 @@ def add_edit_place():
     place_id = request.args.get('placeID') or 0
     if place_id:
         place = db.session.get(Place, place_id)
-        if not g.user.is_admin and not place or not place.owner.id == g.user.id:
+        if not g.user.is_admin and (not place or not place.owner.id == g.user.id):
             return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -70,32 +73,30 @@ def add_edit_place():
         country_id = request.form.get('country_id')
         if not name:
             flash('Invalid place name.', 'error')
-        if not country_id:
+        elif not country_id:
             flash('Please assign a country.', 'error')
         else:
             values_dict = dict(
                 name=name,
                 description=request.form.get('description', ''),
                 countryFK=country_id,
-                ownerFK=g.user.id,
                 deleted=bool(request.form.get('deleted')),
             )
-            if status := request.form.get('status'):
+            if status := request.form.get('status') and g.user.is_admin:
                 values_dict['status'] = status
 
-            if place_id := request.form.get('id'): # Update
+            if place_id := request.form.get('id', 0): # Update
                 stmt = update(Place).where(Place.id == place_id).values(values_dict)
                 result = db.session.execute(stmt) # can check result.rowcount
             else: # Add
-                new_place = Place(**values_dict)
+                new_place = Place(**values_dict, ownerFK=g.user.id)
                 db.session.add(new_place)
 
             db.session.commit()
             flash('Place data saved.')
 
     place = db.session.get(Place, place_id)
-    countries = db.session.scalars(db.select(Country).where(Country.status == FieldStatus.ACTIVE)
-        .order_by(Country.name)).all()
+    countries = Country.get_active()
 
     return render_template('main/places_edit.html', place=place, field_statuses=FieldStatus,
         countries=countries)

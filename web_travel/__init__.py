@@ -22,7 +22,7 @@ logging.basicConfig(
     )
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-# logging.getLogger('sqlalchemy').setLevel('INFO')
+#logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 # initial db setup
 class Base(DeclarativeBase):
     pass

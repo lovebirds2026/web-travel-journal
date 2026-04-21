@@ -4,7 +4,9 @@ import sqlite3
 from sqlalchemy import text
 from web_travel import create_app, db
 from instance.config import TestingConfig
-from web_travel.models.Continent import Continent
+from web_travel.models.Continent import Continent, FieldStatus
+from web_travel.models.Country import Country
+from web_travel.models.Place import Place
 
 
 @pytest.fixture(scope='session')
@@ -38,8 +40,19 @@ def init_database(User):
     db.session.add(user1)
     db.session.add(user2)
 
-    continent1 = Continent(name='North America')
+    continent1 = Continent(name='South America')
+    continent2 = Continent(name='Africa')
     db.session.add(continent1)
+    db.session.add(continent2)
+
+    country1 = Country(name='Bolivia', continentFK=1)
+    country2 = Country(name='Chad', continentFK=2)
+    country3 = Country(name='Sudan', continentFK=2, status=FieldStatus.REJECTED)
+    db.session.add_all([country1, country2, country3])
+
+    place1 = Place(name='Hand of God', description='G', countryFK=2, ownerFK=2, status=FieldStatus.ACTIVE)
+    place2 = Place(name='place2', description='', countryFK=1, ownerFK=2, status=FieldStatus.REJECTED, deleted=True)
+    db.session.add_all([place1, place2])
 
     db.session.commit()
 
