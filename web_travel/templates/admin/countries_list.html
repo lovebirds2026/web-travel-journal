@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Admin: Continents list{% endblock %}</h2>
+  <h2>{% block title %}Admin: Countries list{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
@@ -19,6 +19,14 @@
       <option value="">All
       <option value="1" {{ 'selected' if request.args.get('deleted') == '1' }}>Yes
       <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
+    </select>
+
+    <label for="continent_id">Continent:</label>
+    <select name="continent_id" id="continent_id">
+      <option value="">All
+    {% for continent in continents %}
+      <option value="{{ continent.id }}" {{ 'selected' if request.args.get('continent_id') | int == continent.id }}>{{ continent.name }}
+    {% endfor %}
     </select>
 
     <!-- Search text with field select with options -->
@@ -41,29 +49,26 @@
       <tr>
         <th>Id
         <th>Name
+        <th>Continent
         <th>Status
-        <th>Links
         <th>Actions
       </tr>
     </thead>
 
     <tbody>
-      {% for continent in continents %}
+      {% for country in countries %}
       <tr>
-          <td>{{ continent.id }}
-          <td>{{ continent.name }}
-          <td>{{ continent.status }}
-          <td>
-            <a href="{{ url_for('admin.list_countries', continent_id=continent.id) }}">
-              Countries
-            </a>
+          <td>{{ country.id }}
+          <td>{{ country.name }}
+          <td>{{ country.continent.name }}
+          <td>{{ country.status }}
           <td>
             {% set args = dict(request.args) %}
-            {% set _ = args.update({'del': continent.id}) %}
-            <a href="{{ url_for('admin.list_continents', **args) }}">
-              {{ 'Undelete' if continent.deleted else 'Delete' }}
+            {% set _ = args.update({'del': country.id}) %}
+            <a href="{{ url_for('admin.list_countries', **args) }}">
+              {{ 'Undelete' if country.deleted else 'Delete' }}
             </a> | 
-            <a href="/admin/continents/edit?continentID={{ continent.id }}">Edit</a>
+            <a href="/admin/countries/edit?countryID={{ country.id }}">Edit</a>
           </td>
       </tr>
       {% endfor %}

@@ -1,5 +1,4 @@
-from web_travel import db
-from flask import session, g
+from flask import session
 
 def test_users_list_missing_admin_access(flask_client):
     response = flask_client.get('/admin/users/list')

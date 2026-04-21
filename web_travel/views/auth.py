@@ -1,8 +1,6 @@
 import functools
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, \
-    make_response
-from sqlalchemy import text
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from .. import db
 from ..models.User import User
@@ -40,17 +38,8 @@ def admin_required(view):
 
     return wrapped_view
 
+
 # routes
-@bluepr.route('/')
-def test():
-    res = db.session.execute(text('SELECT * FROM public.user')).all()
-
-    stmt = db.select(User)
-    res1 = db.session.scalar(stmt) # scalar = execute + scalars + first
-    #print(vars(res1))
-    return make_response(f'Module {__name__}: OK, found user {res2[0][:3]}')
-
-
 @bluepr.route('/register', methods=['GET', 'POST'])
 @guest_required
 def register():

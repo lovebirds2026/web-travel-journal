@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "web_travel"
-version = "0.1"
+version = "0.2"
 authors = [
   { name="Denislav Dimitrov", email="denislav.dimitrov@mail.bg" },
 ]
 description = "Travel Journal Web Solution"
 requires-python = ">=3.13"
 dependencies = ["flask>3.1", "Flask-SQLAlchemy>3.1", "psycopg2-binary", "Flask-Mail",
-    "pyjwt>2", ]
+    "pyjwt>2", "flask-ckeditor", ]
 
 [project.optional-dependencies]
 test = ["pytest>=7.0"]

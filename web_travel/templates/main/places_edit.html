@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Add or edit place{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  {{ ckeditor.load() if '.aime.bg' in config['SERVER_NAME'] else ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js')) }}
+  <form method="post">
+    <input type="hidden" name="id" id="id" value="{{ place.id }}">
+
+    <label for="name">Name</label>
+    <input name="name" id="name" value="{{ place.name or request.form.get('name', '') }}">
+
+    <label for="description">Description</label>
+    {{ ckeditor.create(name='description', value=(request.form.get('description', '') or place.description) ) }}
+    {{ ckeditor.config(name='description', versionCheck=False) }}
+
+    <label for="country">Country</label>
+    <select name="country_id" id="country_id">
+      <option value="">-- Please select --</option>
+    {% for country in countries %}
+      <option value="{{ country.id }}" {{ 'selected' if place and place.countryFK == country.id }}>{{ country.name }}
+    {% endfor %}
+    </select>
+
+    <label for="status">Status</label>
+    <select name="status" id="status" {{ 'disabled' if not g.user.is_admin }}>
+    {% for status in field_statuses %}
+      <option value="{{ status }}" {{ 'selected' if place and place.status == status or not place and status == 'new' }}>{{ status }}
+    {% endfor %}
+    </select>
+    <br/>
+
+    <label for="deleted">Deleted</label>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if place.deleted }}>
+    <br/><br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

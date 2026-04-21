@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Admin: Users list{% endblock %}</h1>
+  <h2>{% block title %}Admin: Users list{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
@@ -60,7 +60,9 @@
           <td>{{ 'Yes' if user.is_admin else 'No' }}
           <td>{{ 'Yes' if user.active else 'No' }}
           <td>
-            <a href="{{ url_for('admin.list_users', del=user.id, **request.args) }}">
+            {% set args = dict(request.args) %}
+            {% set _ = args.update({'del': user.id}) %}
+            <a href="{{ url_for('admin.list_users', **args) }}">
               {{ 'Activate' if user.deleted else 'Deactivate' }}
             </a> | 
             <a href="/admin/users/edit?userID={{ user.id }}">Edit</a>

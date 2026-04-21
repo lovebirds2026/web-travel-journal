@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Admin: Add or edit continent{% endblock %}</h1>
+  <h2>{% block title %}Admin: Add or edit continent{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
@@ -9,7 +9,7 @@
     <input type="hidden" name="id" id="id" value="{{ continent.id }}">
 
     <label for="name">Name</label>
-    <input name="name" id="name" value="{{ continent.name }}">
+    <input name="name" id="name" value="{{ continent.name or request.form.get('name', '') }}">
 
     <label for="status">Status</label>
     <select name="status" id="status">
@@ -20,7 +20,7 @@
     <br/>
 
     <label for="deleted">Deleted</label>
-    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if continent.deleted else '' }}>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if continent.deleted }}>
     <br/><br/>
     <input type="submit" value="Save changes">
   </form>

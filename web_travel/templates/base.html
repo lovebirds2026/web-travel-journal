@@ -7,32 +7,44 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='water-light.css') }}">
 
 <nav>
-  <h1>
-    <div><img src="{{ url_for('static', filename='lovebirds_ico.ico') }}" width="80" /></div>
-    <div class="header">Web Travel Journal</div>
-  </h1>
-  <ul>
-    {% if g.user %}
-      <li><span>Heyya, {{ g.user['full_name'] or g.user['username'] }}</span>
-      <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a>
-      <li class="{{ 'active' if request.path == '/user' }}"><a href="{{ url_for('main.user_account') }}">Account Management</a>
-      {% if g.user.is_admin %}
-      <li class="{{ 'active' if request.path.startswith('/admin') }}"><a href="{{ url_for('admin.list_users') }}">Admin</a>
-      {% endif %}
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a>
-      <li class="{{ 'active' if request.path == '/auth/register' }}"><a href="{{ url_for('auth.register') }}">Register</a>
-      <li class="{{ 'active' if request.path == '/auth/login' }}"><a href="{{ url_for('auth.login') }}">Log In</a>
-    {% endif %}
+  <div class="top-row">
+    <div class="logo"><img src="{{ url_for('static', filename='lovebirds_ico.ico') }}" width="80" /></div>
+    <h1 class="site-title">Web Travel Journal</h1>
+
+    <div class="account-menu">
+      <ul>
+        {% if g.user %}
+          <li><span>Heyya, {{ g.user['full_name'] or g.user['username'] }}</span></li>
+          <li class="{{ 'active' if request.path == '/user' }}"><a href="{{ url_for('main.user_account') }}">Account Management</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+        {% else %}
+          <li class="{{ 'active' if request.path == '/auth/register' }}"><a href="{{ url_for('auth.register') }}">Register</a></li>
+          <li class="{{ 'active' if request.path == '/auth/login' }}"><a href="{{ url_for('auth.login') }}">Log In</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <ul class="main-menu">
+    <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a></li>
+    <li class="{{ 'active' if request.path == '/places' }}"><a href="{{ url_for('main.places') }}">Places:</a></li>
+  {% if g.user %}
+    <li class="{{ 'active' if request.path.startswith('/places/edit') }}"><a href="{{ url_for('main.add_edit_place') }}"><i>Add</i></a></li>
+  {% endif %}
+  {% if g.user and g.user.is_admin %}
+    <li class="{{ 'active' if request.path.startswith('/admin') }}"><a href="{{ url_for('admin.list_users') }}">Admin</a></li>
+  {% endif %}
   </ul>
 
   <!-- Admin submenu -->
   {% if g.user.is_admin and request.path.startswith('/admin') %}
   <ul>Admin menu:
-    <li class="{{ 'active' if request.path == '/admin/users/list' }}"><a href="{{ url_for('admin.list_users') }}">Users</a>
-    <li class="{{ 'active' if request.path == '/admin/continents/list' }}"><a href="{{ url_for('admin.list_continents') }}">Continents:</a> 
-    <li><a href="{{ url_for('admin.add_edit_continent') }}">Add</a> 
+    <li class="{{ 'active' if request.path == '/admin/users/list' }}"><a href="{{ url_for('admin.list_users') }}">Users</a></li>
+    <li class="{{ 'active' if request.path == '/admin/continents/list' }}"><a href="{{ url_for('admin.list_continents') }}">Continents:</a></li>
+    <li><a href="{{ url_for('admin.add_edit_continent') }}"><i>Add</i></a></li>
+
+    <li class="{{ 'active' if request.path == '/admin/countries/list' }}"><a href="{{ url_for('admin.list_countries') }}">Countries:</a></li>
+    <li><a href="{{ url_for('admin.add_edit_country') }}"><i>Add</i></a></li>
   </ul>
   {% endif %}
 </nav>

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Places{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  <form method="get" class="form_filters">
+    <label for="status">Status:</label>
+    <select name="status" id="status">
+      <option value="">All
+    {% for status in field_statuses %}
+      <option value="{{ status }}" {{ 'selected' if request.args.get('status') == status }}>{{ status }}
+    {% endfor %}
+    </select>
+
+    <label for="deleted">Deleted:</label>
+    <select name="deleted" id="deleted">
+      <option value="">All
+      <option value="1" {{ 'selected' if request.args.get('deleted') == '1' }}>Yes
+      <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
+    </select>
+
+    <label for="country_id">Country:</label>
+    <select name="country_id" id="country_id">
+      <option value="">All
+    {% for country in countries %}
+      <option value="{{ country.id }}" {{ 'selected' if request.args.get('country_id') | int == country.id }}>{{ country.name }}
+    {% endfor %}
+    </select>
+
+    <!-- Search text with field select with options -->
+    <label for="search_text">Search:</label>
+    <input name="search_text" id="search_text" value="{{ request.args.get('search_text') or '' }}">
+    <label for="search_field">in</label>
+    <select name="search_field" id="search_field">
+      <option value="">-- Select Field --
+      <option value="name" {{ 'selected' if request.args.get('search_field') == 'name' }}>Name
+      <option value="description" {{ 'selected' if request.args.get('search_field') == 'description' }}>Description
+    </select>
+
+    <label for="my">My places</label>
+    <input type="checkbox" name="my" id="my" {{ 'checked' if request.args.get('my') }}>
+
+    <input type="submit" value="Apply filter">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="{{ request.base_url }}"><button type="button">Reset</button></a>
+  </form>
+  <br/>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Id
+        <th>Name
+        <th colspan="5">Description
+        <th>Country
+        <th>Status
+        <th>Actions
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for place in places %}
+      <tr>
+          <td>{{ place.id }}
+          <td>{{ place.name }}
+          <td colspan="5">{{ place.description|truncate(100) }} {# |safe #}
+          <td>{{ place.country.name }}
+          <td>{{ place.status }}
+          <td>
+            {% if g.user and g.user.is_admin %}
+              {% set args = dict(request.args) %}
+              {% set _ = args.update({'del': place.id}) %}
+              <a href="{{ url_for('main.places', **args) }}">
+                {{ 'Undelete' if place.deleted else 'Delete' }}
+              </a> | 
+            {% endif %}
+            {% if g.user and (g.user.is_admin or place.owner.id == g.user.id) %}
+              <a href="{{ url_for('main.add_edit_place', placeID=place.id) }}">Edit</a>
+            {% else %}
+            -
+            {% endif %}
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Admin: Edit user{% endblock %}</h1>
+  <h2>{% block title %}Admin: Edit user{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
@@ -18,13 +18,13 @@
     <input name="full_name" id="full_name" value="{{ user.full_name or '' }}">
     <br/>
     <label for="active">Active?</label>
-    <input type="checkbox" name="active" id="active" {{ 'checked' if user.active else '' }}>
+    <input type="checkbox" name="active" id="active" {{ 'checked' if user.active }}>
     <br/>
     <label for="is_admin">Is Admin?</label>
-    <input type="checkbox" name="is_admin" id="is_admin" {{ 'checked' if user.is_admin else '' }}>
+    <input type="checkbox" name="is_admin" id="is_admin" {{ 'checked' if user.is_admin }}>
     <br/>
     <label for="deleted">Deleted</label>
-    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if user.deleted else '' }}>
+    <input type="checkbox" name="deleted" id="deleted" {{ 'checked' if user.deleted }}>
     <br/><br/>
     <input type="submit" value="Save changes">
   </form>

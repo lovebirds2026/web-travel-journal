@@ -6,5 +6,6 @@ logs
 # Flask stuff:
 instance/
 .webassets-cache
+web_travel/static/ckeditor
 # Other:
 .cursorignore

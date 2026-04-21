@@ -6,6 +6,7 @@ from flask import Flask
 from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from flask_ckeditor import CKEditor
 from instance.config import *
 
 # configure root logging
@@ -22,13 +23,14 @@ logging.basicConfig(
     )
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
+#logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 # initial db setup
 class Base(DeclarativeBase):
     pass
 db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session automatically
 
 mail = Mail()
+ckeditor = CKEditor()
 
 def create_app(test_app=False):
     app = Flask(__name__)
@@ -40,6 +42,7 @@ def create_app(test_app=False):
         db.reflect() # get existing tables
 
     mail.init_app(app) # set up at configuration time
+    ckeditor.init_app(app)
 
     # blueprints
     from .views import auth # deferred import (moves the import from module load time -> call time)

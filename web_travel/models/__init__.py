@@ -3,11 +3,14 @@ from sqlalchemy import sql, func, DateTime, cast, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from datetime import datetime, UTC
+from enum import StrEnum
 
 from .. import db
 
-def test_tz():
-    return datetime.now(UTC)
+class FieldStatus(StrEnum):
+    NEW = 'new'
+    ACTIVE = 'active'
+    REJECTED = 'rejected'
 
 class Base(db.Model):
     __abstract__ = True
@@ -19,7 +22,8 @@ class Base(db.Model):
     cid: Mapped[int] = mapped_column(nullable=True)
     ct: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     uid: Mapped[int] = mapped_column(nullable=True)
-    ut: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=test_tz)
+    ut: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), 
+        onupdate=lambda: datetime.now(UTC))
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())
 
 
@@ -30,3 +34,9 @@ class Base(db.Model):
             field = cast(getattr(cls, search_field), String) # just to practice cast(), not cool with id
             stmt = stmt.where(field.icontains(search_text))
         return stmt.order_by(cls.id.asc())
+
+    @classmethod
+    def get_active(cls): # Note: won't work for all tables, consider Mixin
+        stmt = db.select(cls).where(cls.status == FieldStatus.ACTIVE).order_by(cls.name.asc())
+        return db.session.scalars(stmt).all()
+

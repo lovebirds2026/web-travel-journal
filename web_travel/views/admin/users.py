@@ -1,11 +1,22 @@
-from flask import render_template, request, flash, redirect, url_for
-from sqlalchemy import update
+from flask import render_template, request, flash, redirect, url_for, make_response
+from sqlalchemy import update, text
 
 from ... import db
 from web_travel.views.admin import bluepr
 from ..auth import admin_required
 from ...models.User import User
 from ...utils import check_email_input
+
+
+@bluepr.route('/')
+@admin_required
+def dev_test(): # @TODO: delete before launching
+    res = db.session.execute(text('SELECT * FROM public.user')).all()
+
+    stmt = db.select(User)
+    res1 = db.session.scalar(stmt) # scalar = execute + scalars + first
+    #print(vars(res1))
+    return make_response(f'Module {__name__}: OK, found user {res[0][:3]}')
 
 
 @bluepr.route('/users/list', methods=['GET'])# ?del=<int>
@@ -19,12 +30,11 @@ def list_users():
         flash(f'User {user.username} status changed to {"deleted" if user.deleted else "active"}.')
 
     filters = {} # Dropdown boolean filters
-    is_admin = request.args.get('is_admin')
-    if is_admin:
+    if is_admin := request.args.get('is_admin'):
         filters['is_admin'] = is_admin == '1'
-    deleted = request.args.get('deleted')
-    if deleted:
+    if deleted := request.args.get('deleted'):
         filters['deleted'] = deleted == '1'
+
     search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
 

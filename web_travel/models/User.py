@@ -1,16 +1,20 @@
 from flask import current_app, url_for
+from sqlalchemy.orm import Mapped, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Message
 
 from .. import db, mail
 from . import Base
-from ..utils import create_token, decode_token, check_email_input
+from ..utils import create_token, check_email_input
 from instance.config import Config
 
 class User(Base):
     __table__ = db.metadata.tables['user']
+    # to remove reflection can manually describe all fields here.
 
     _searchable_fields = ('id', 'username', 'email', 'full_name', )
+
+    places: Mapped[list['Place']] = relationship(back_populates='owner')
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'
