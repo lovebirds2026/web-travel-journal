@@ -1,4 +1,4 @@
-from sqlalchemy import Index, UniqueConstraint, Enum as saEnum, ForeignKey
+from sqlalchemy import Enum as saEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import Base, FieldStatus

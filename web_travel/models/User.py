@@ -15,6 +15,7 @@ class User(Base):
     _searchable_fields = ('id', 'username', 'email', 'full_name', )
 
     places: Mapped[list['Place']] = relationship(back_populates='owner')
+    travels: Mapped[list['Travel']] = relationship(back_populates='owner')
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'

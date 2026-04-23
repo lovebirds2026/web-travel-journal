@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Add or edit travel{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  {{ ckeditor.load() if '.aime.bg' in config['SERVER_NAME'] else ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js')) }}
+  <form method="post">
+    <input type="hidden" name="id" id="id" value="{{ travel.id }}">
+
+    <label for="title">Title</label>
+    <input name="title" id="title" value="{{ request.form.get('title') or travel.title }}">
+
+    <div class="dateholder">
+      <div>
+        <label for="date_from">From:</label>
+        <input type="date" id="date_from" name="date_from" value="{{ request.form.get('date_from') or travel.date_from }}">
+      </div>
+      <div>
+        <label for="date_to">To:</label>
+        <input type="date" id="date_to" name="date_to" value="{{ request.form.get('date_to') or travel.date_to }}">
+      </div>
+    </div>
+
+    <label for="notes"><i>Personal note</i></label>
+    <textarea name="notes" id="notes" >{{ request.form.get('notes') or travel.user_note }}</textarea>
+    <br/>
+
+    <label for="public">Public?</label>
+    <input type="checkbox" name="public" id="public" {{ 'checked' if travel.public }}>
+    <br/><br/>
+    <input type="submit" value="Save changes">
+  </form>
+{% endblock %}

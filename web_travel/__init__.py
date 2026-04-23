@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import warnings
+warnings.filterwarnings('ignore', module='flask_ckeditor') # silences WTFForms and bleach not installed
 
 from flask import Flask
 from sqlalchemy.orm import DeclarativeBase

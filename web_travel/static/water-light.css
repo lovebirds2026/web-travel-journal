@@ -948,3 +948,8 @@ form > input#my {
     max-width: 60%;
   }
 }
+
+form .dateholder > div:first-child {
+  float: left;
+  margin-right: 40px;
+}

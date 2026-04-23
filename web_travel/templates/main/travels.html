@@ -1,9 +1,41 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Travels Collection{% endblock %}</h2>
+  <h2>{% block title %}My Travels{% endblock %}</h2>
 {% endblock %}
 
 {% block content %}
-  travels list
+  <table>
+    <thead>
+      <tr>
+        <th>Id
+        <th>Title
+        <th>Dates
+        <th colspan="5">Note
+        <th>Status
+      {% if g.user.is_admin %}
+        <th>Owner
+      {% endif %}
+        <th>Actions
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for travel in travels %}
+      <tr>
+          <td>{{ travel.id }}
+          <td>{{ travel.title }}
+          <td>{{ travel.date_from.strftime('%b %d, %Y') }} - {{ travel.date_to.strftime('%b %d, %Y') }}
+          <td colspan="5">{{ travel.user_note|truncate(100) }}
+          <td>{{ 'Public' if travel.public else 'Hidden' }}
+        {% if g.user.is_admin %}
+          <td>{{ travel.owner.username }}
+        {% endif %}
+          <td>
+            <a href="{{ url_for('main.add_edit_travel', travelID=travel.id) }}">Edit</a>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}
