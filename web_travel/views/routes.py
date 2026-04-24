@@ -11,6 +11,7 @@ from .auth import login_required
 from ..models.Place import Place, FieldStatus
 from ..models.Country import Country
 from ..models.Travel import Travel
+from ..models.TravelRelation import TravelRelation
 
 bluepr = Blueprint('main', __name__) # web_travel.routes
 
