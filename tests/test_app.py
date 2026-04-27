@@ -1,4 +1,5 @@
-# coverage run -m pytest | coverage report
+# coverage run -m pytest
+# coverage report
 # flags -v -s (print) -k (function) --last-failed  --setup-show!! 
 from sqlalchemy import desc
 from flask_mail import Message
@@ -8,6 +9,7 @@ from instance.config import Config
 from web_travel.models.Continent import Continent
 from web_travel.models.Country import Country
 from web_travel.models.Place import Place
+from web_travel.models.Travel import Travel
 
 # general unit tests
 def test_index(flask_client):
@@ -34,6 +36,11 @@ def test_place_table_exists(init_database):
     prepopulated_place = db.session.scalar(db.select(Place).order_by(desc('id')))
     assert prepopulated_place is not None
     assert prepopulated_place.name == 'place2'
+
+def test_travel_table_exists(init_database):
+    prepopulated_travel = db.session.scalar(db.select(Travel).order_by(desc('id')))
+    assert prepopulated_travel is not None
+    assert prepopulated_travel.title == 'Travel 1'
 
 def test_server_name_in_email():
     deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'

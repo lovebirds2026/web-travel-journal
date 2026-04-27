@@ -953,3 +953,36 @@ form .dateholder > div:first-child {
   float: left;
   margin-right: 40px;
 }
+
+.inline {
+  display: inline-block;
+}
+
+/* Relations snippet */
+.relations {
+  .selected {
+    min-height: 3em;
+
+    button {
+      background: palegreen;
+    }
+  }
+
+  .available {
+    > div {
+      min-height: 3em;
+    }
+    label {
+      margin: 5px 10px 0px 0px;
+      font-size: 1.2em;
+    }
+    span.rel_label {
+      display: inline-block;
+      min-width: 85px;
+    }
+    button {
+      background: coral;
+    }
+  }
+
+} 

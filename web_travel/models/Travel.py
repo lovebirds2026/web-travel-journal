@@ -25,10 +25,9 @@ class Travel(Base):
     date_from: Mapped[date]
     date_to: Mapped[date]
     public: Mapped[bool] = mapped_column(server_default=sql.false(), index=True)
-    ownerFK: Mapped[int] = mapped_column('owner_userFK', ForeignKey('user.id'))
     
     owner: Mapped['User'] = relationship(back_populates='travels')
-    relations: Mapped[list['TravelRelation']] = relationship(back_populates='travel')
+    relations: Mapped[list['TravelRelation']] = relationship(back_populates='travel', cascade='all, delete-orphan')
     
 
     def get_relation_names(self) -> dict[str, dict[int, str | None]]:

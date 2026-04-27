@@ -10,6 +10,7 @@ from ..models.User import User
 from .auth import login_required
 from ..models.Place import Place, FieldStatus
 from ..models.Country import Country
+from ..models.Continent import Continent
 from ..models.Travel import Travel
 from ..models.TravelRelation import TravelRelation
 
@@ -27,7 +28,7 @@ def travels():
     if g.user.is_admin:
         stmt = stmt.options(selectinload(Travel.owner))
     else:
-        stmt = stmt.where(Travel.ownerFK == g.user.id)
+        stmt = stmt.where(Travel.cid == g.user.id)
     travels = db.session.scalars(stmt).all()
 
     return render_template('main/travels.html', travels=travels)
@@ -39,7 +40,7 @@ def add_edit_travel():
     travel_id = request.args.get('travelID') or 0
     if travel_id:
         travel = db.session.get(Travel, travel_id)
-        if not g.user.is_admin and (not travel or not travel.ownerFK == g.user.id):
+        if not g.user.is_admin and (not travel or not travel.cid == g.user.id):
             return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -61,7 +62,8 @@ def add_edit_travel():
         if not errors:
             values_dict = dict(
                 title=title,
-                user_note=request.form.get('notes'),
+                description=request.form.get('description', ''),
+                user_note=request.form.get('notes', ''),
                 date_from=date_from,
                 date_to=date_to,
                 public=bool(request.form.get('public', False)),
@@ -70,8 +72,20 @@ def add_edit_travel():
                 stmt = update(Travel).where(Travel.id == travel_id).values(values_dict)
                 db.session.execute(stmt)
             else: # Add
-                new_travel = Travel(**values_dict, ownerFK=g.user.id)
+                new_travel = Travel(**values_dict)
                 db.session.add(new_travel)
+                travel = new_travel
+
+            # Save travel relations if any
+            submitted = {tuple(rel.split(':')) for rel in request.form.getlist('relations[]')}
+            existing = {(tr.relation, str(tr.relationFK)) for tr in travel.relations}
+            # add
+            for rel_type, rel_id in submitted - existing:
+                travel.relations.append(TravelRelation(relation=rel_type, relationFK=int(rel_id)))
+            # remove
+            for tr in list(travel.relations):
+                if(tr.relation, str(tr.relationFK)) not in submitted:
+                    travel.relations.remove(tr)
 
             db.session.commit()
             flash('Travel data saved.')
@@ -81,7 +95,15 @@ def add_edit_travel():
             flash(msg, 'error')
 
     travel = db.session.get(Travel, travel_id)
-    return render_template('main/travels_edit.html', travel=travel)
+    relations: dict = travel.get_relation_names() if travel else {}
+    all_relations = {
+        'continent': {c.id: c.name for c in Continent.get_active() if not relations.get('continent', {}).get(c.id)},
+        'country': {c.id: c.name for c in Country.get_active() if not relations.get('country', {}).get(c.id)},
+        'place': {p.id: p.name for p in Place.get_active() if not relations.get('place', {}).get(p.id)},
+    }
+
+    return render_template('main/travels_edit.html', travel=travel, current_relations=relations,
+        all_relations=all_relations)
 
 
 @bluepr.route('/places', methods=['GET'])
@@ -101,7 +123,7 @@ def places():
     if country_id := request.args.get('country_id'):
         filters['countryFK'] = country_id
     if own_only := request.args.get('my'):
-        filters['ownerFK'] = g.user.id
+        filters['cid'] = g.user.id
 
     search_text = request.args.get('search_text') # Text search in field
     search_field = request.args.get('search_field')
@@ -113,7 +135,7 @@ def places():
     if not g.user:
         stmt = stmt.where(Place.status == FieldStatus.ACTIVE, Place.deleted == False)
     elif not g.user.is_admin:
-        stmt = stmt.where( (Place.ownerFK == g.user.id) | 
+        stmt = stmt.where( (Place.cid == g.user.id) | 
             (Place.status == FieldStatus.ACTIVE) & (Place.deleted == False) )
     places = db.session.scalars(stmt).all()
     countries = Country.get_active()
@@ -128,7 +150,7 @@ def add_edit_place():
     place_id = request.args.get('placeID') or 0
     if place_id:
         place = db.session.get(Place, place_id)
-        if not g.user.is_admin and (not place or not place.ownerFK == g.user.id):
+        if not g.user.is_admin and (not place or not place.cid == g.user.id):
             return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -152,7 +174,7 @@ def add_edit_place():
                 stmt = update(Place).where(Place.id == place_id).values(values_dict)
                 db.session.execute(stmt)
             else: # Add
-                new_place = Place(**values_dict, ownerFK=g.user.id)
+                new_place = Place(**values_dict)
                 db.session.add(new_place)
 
             db.session.commit()

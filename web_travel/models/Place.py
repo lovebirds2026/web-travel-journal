@@ -17,7 +17,6 @@ class Place(Base):
         saEnum(FieldStatus, name='status_enum', values_callable=lambda x: [e.value for e in x]), 
         default=FieldStatus.NEW, index=True)
     countryFK: Mapped[int] = mapped_column(ForeignKey('country.id'), nullable=True)
-    ownerFK: Mapped[int] = mapped_column('owner_userFK', ForeignKey('user.id'))
     
     country: Mapped['Country'] = relationship(back_populates='places')
     owner: Mapped['User'] = relationship(back_populates='places')

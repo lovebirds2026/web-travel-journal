@@ -20,7 +20,7 @@ def test_create_place_with_default_status_new(flask_client, init_database):
     
     # create a new place
     data = dict(name='Test place 3', description='description', country_id=3, user_id=2)
-    response = flask_client.post('/places/edit', data=data)
+    response = flask_client.post('/places/edit', data=data, follow_redirects=True)
     assert 'data saved' in response.text
     
     # test default status

@@ -24,12 +24,22 @@
     </div>
 
     <label for="notes"><i>Personal note</i></label>
-    <textarea name="notes" id="notes" >{{ request.form.get('notes') or travel.user_note }}</textarea>
+    <textarea name="notes" id="notes" rows="3">{{ request.form.get('notes') or travel.user_note }}</textarea>
+    <br/>
+
+    <label for="description">Description</label>
+    {{ ckeditor.create(name='description', value=(request.form.get('description') or travel.description) ) }}
+    {{ ckeditor.config(name='description', versionCheck=False) }}
     <br/>
 
     <label for="public">Public?</label>
     <input type="checkbox" name="public" id="public" {{ 'checked' if travel.public }}>
     <br/><br/>
-    <input type="submit" value="Save changes">
+
+    {% include 'snippets/travel_relations.html' %}
+    <br/><br/>
+
+    <input type="submit" class="inline" value="Save changes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="{{ request.url }}"><button type="button">Reset </button></a>
   </form>
 {% endblock %}
