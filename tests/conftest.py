@@ -2,7 +2,8 @@ import os
 import pytest
 import sqlite3
 from datetime import date
-from sqlalchemy import text
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from web_travel import create_app, db
 from instance.config import TestingConfig
 from web_travel.models.Continent import Continent, FieldStatus
@@ -69,6 +70,11 @@ def init_database(User):
     db.drop_all()
 
 
+@pytest.fixture
+def query_counter():
+    return QueryCounter
+
+
 def create_users_table():
     # this table exists already and is reflected in the app, need to create it manually
     sql_stmts = [
@@ -101,3 +107,24 @@ def create_users_table():
     finally:
         conn.close()
 
+
+class QueryCounter:
+    """Context manager to count (and optionally print) SQLAlchemy queries."""
+    def __init__(self, print_sql: bool = False):
+        self._count = 0
+        self._print_sql = print_sql
+
+    def __enter__(self):
+        event.listen(Engine, "before_cursor_execute", self.callback)
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        event.remove(Engine, "before_cursor_execute", self.callback)
+
+    def callback(self, conn, cursor, statement, parameters, context, executemany):
+        self._count += 1
+        if self._print_sql:
+            print(f'\n--- Query #{self._count} ---\n{statement}\nparams: {parameters}')
+
+    def __call__(self):
+        return self._count

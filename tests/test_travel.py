@@ -12,6 +12,7 @@ from web_travel.models.TravelRelation import TravelRelation
 def get_travel_relations_count():
     return db.session.execute(db.select(func.count()).select_from(TravelRelation)).scalar()
 
+
 def test_add_travel_relations(init_database):
     assert get_travel_relations_count() == 0
 
@@ -31,7 +32,7 @@ def test_remove_travel_relations(init_database):
     assert len(travel.relations) == 0
     assert get_travel_relations_count() == 0
 
-def test_create_travel(flask_client, init_database):
+def test_add_travel(flask_client):
     # simulate logged in normal user
     with flask_client.session_transaction() as session:
         session['user_id'] = 2
@@ -50,16 +51,24 @@ def test_create_travel(flask_client, init_database):
     assert len(new_travel.relations) == 3
     assert get_travel_relations_count() == 3
 
-def test_missing_invalid_date(flask_client, init_database):
+def test_relations_count_db_queries(query_counter):
+    travel = db.session.get(Travel, 2)
+    with query_counter() as counter: # pass True as argument to print queries
+        rels = travel.get_relation_names()
+    assert counter() == 3 # 1 to get travel.relations, 1 for all continents + 1 for all countries
+
+def test_add_missing_date(flask_client):
     data = dict(title='Travel 3', date_to=date.fromisoformat('2025-01-01'), user_note='', 
         description='')
     response = flask_client.post('/travels/edit', data=data)
     assert 'dates are required' in response.text
 
+def test_edit_invalid_date(flask_client):
     data = dict(id=2, title='Travel 3', date_from='Mar 23, 2000', date_to=date.fromisoformat('2025-01-01'), 
         user_note='', description='')
     response = flask_client.post('/travels/edit?travelID=2', data=data)
     assert 'Invalid date' in response.text
+
 
 def test_edit_travel_ok(flask_client):
     date_ = date.fromisoformat('2000-12-12')
