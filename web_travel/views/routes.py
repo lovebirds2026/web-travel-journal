@@ -4,13 +4,14 @@ from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 
 from datetime import date
+import logging
+log = logging.getLogger(__name__)
 
 from .. import db
 from ..models.User import User
 from .auth import login_required
 from ..models.Place import Place, FieldStatus
 from ..models.Country import Country
-from ..models.Continent import Continent
 from ..models.Travel import Travel
 from ..models.TravelRelation import TravelRelation
 
@@ -44,63 +45,18 @@ def add_edit_travel():
             return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        errors = []
-        title = request.form.get('title')
-        date_from = request.form.get('date_from')
-        date_to = request.form.get('date_to')
-        if not title:
-            errors.append('Travel name is required.')
-        if not date_from or not date_to:
-            errors.append('Both from and to dates are required.')
+        errors = Travel.validate_input(request.form)
+        if errors:
+            for msg in errors:
+                flash(msg, 'error')
         else:
-            try:
-                date_from = date.fromisoformat(date_from)
-                date_to = date.fromisoformat(date_to)
-            except ValueError:
-                errors.append('Invalid date format.')
-
-        if not errors:
-            values_dict = dict(
-                title=title,
-                description=request.form.get('description', ''),
-                user_note=request.form.get('notes', ''),
-                date_from=date_from,
-                date_to=date_to,
-                public=bool(request.form.get('public', False)),
-            )
-            if travel_id := request.form.get('id', 0): # Update
-                stmt = update(Travel).where(Travel.id == travel_id).values(values_dict)
-                db.session.execute(stmt)
-            else: # Add
-                new_travel = Travel(**values_dict)
-                db.session.add(new_travel)
-                travel = new_travel
-
-            # Save travel relations if any
-            submitted = {tuple(rel.split(':')) for rel in request.form.getlist('relations[]')}
-            existing = {(tr.relation, str(tr.relationFK)) for tr in travel.relations}
-            # add
-            for rel_type, rel_id in submitted - existing:
-                travel.relations.append(TravelRelation(relation=rel_type, relationFK=int(rel_id)))
-            # remove
-            for tr in list(travel.relations):
-                if(tr.relation, str(tr.relationFK)) not in submitted:
-                    travel.relations.remove(tr)
-
-            db.session.commit()
+            Travel.add_edit(request.form)
             flash('Travel data saved.')
             return redirect(url_for('main.travels'))
 
-        for msg in errors:
-            flash(msg, 'error')
-
     travel = db.session.get(Travel, travel_id)
     relations: dict = travel.get_relation_names() if travel else {}
-    all_relations = {
-        'continent': {c.id: c.name for c in Continent.get_active() if not relations.get('continent', {}).get(c.id)},
-        'country': {c.id: c.name for c in Country.get_active() if not relations.get('country', {}).get(c.id)},
-        'place': {p.id: p.name for p in Place.get_active() if not relations.get('place', {}).get(p.id)},
-    }
+    all_relations = TravelRelation.as_dict(exclude=relations)
 
     return render_template('main/travels_edit.html', travel=travel, current_relations=relations,
         all_relations=all_relations)
@@ -154,30 +110,11 @@ def add_edit_place():
             return redirect(url_for('main.index'))
 
     if request.method == 'POST':
-        name = request.form.get('name')
-        country_id = request.form.get('country_id')
-        if not name:
-            flash('Invalid place name.', 'error')
-        elif not country_id:
-            flash('Please assign a country.', 'error')
+        errors = Place.add_edit(request.form, is_admin=g.user.is_admin)
+        if errors:
+            for msg in errors:
+                flash(msg, 'error')
         else:
-            values_dict = dict(
-                name=name,
-                description=request.form.get('description', ''),
-                countryFK=country_id,
-                deleted=bool(request.form.get('deleted')),
-            )
-            if g.user.is_admin and request.form.get('status'):
-                values_dict['status'] = request.form.get('status')
-
-            if place_id := request.form.get('id', 0): # Update
-                stmt = update(Place).where(Place.id == place_id).values(values_dict)
-                db.session.execute(stmt)
-            else: # Add
-                new_place = Place(**values_dict)
-                db.session.add(new_place)
-
-            db.session.commit()
             flash('Place data saved.')
             return redirect(url_for('main.places'))
 
