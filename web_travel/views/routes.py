@@ -1,5 +1,5 @@
-from flask import Blueprint, flash, g, render_template, request, session, make_response, \
-    redirect, url_for
+from flask import current_app, Blueprint, flash, g, render_template, request, session, \
+    make_response, redirect, url_for
 from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 
@@ -14,12 +14,37 @@ from ..models.Place import Place, FieldStatus
 from ..models.Country import Country
 from ..models.Travel import Travel
 from ..models.TravelRelation import TravelRelation
+from ..utils import save_photo
 
 bluepr = Blueprint('main', __name__) # web_travel.routes
 
 @bluepr.route('/')
 def index():
     return render_template('main/index.html', title='Home')
+
+
+@bluepr.errorhandler(413)
+def request_entity_too_large(error):
+    flash(f'Max file size is {current_app.config['MAX_CONTENT_LENGTH'] // 1000000} MB.', 'error')
+    redirect_url = session.get('last_url', url_for('main.photos'))
+    return redirect(redirect_url)
+
+
+@bluepr.route('/photos', methods=['GET', 'POST'])
+def photos():
+    if request.method == 'POST':
+        if 'photos' not in request.files or not request.files['photos'].filename:
+            flash('Please upload some photos.', 'error')
+        else:
+            photos = request.files.getlist('photos')
+            for photo in photos:
+                if save_photo(photo):
+                    flash(f'Photo {photo.filename} uploaded.')
+                else:
+                    flash(f'Invalid file: {photo.filename}', 'error')
+            log.debug(photos)
+
+    return render_template('main/add_photos.html')
 
 
 @bluepr.route('/travels', methods=['GET'])
