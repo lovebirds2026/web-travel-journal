@@ -1,4 +1,4 @@
-from flask import render_template, request, flash
+from flask import render_template, request, flash, redirect, url_for
 from sqlalchemy import update
 
 from ... import db
@@ -63,6 +63,7 @@ def add_edit_country():
 
             db.session.commit()
             flash('Country data saved.')
+            return redirect(url_for('admin.list_countries'))
 
     country_id = request.args.get('countryID') or 0
     country = db.session.get(Country, country_id)

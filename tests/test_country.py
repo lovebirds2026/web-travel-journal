@@ -22,7 +22,8 @@ def test_change_country_status(flask_client, init_database):
     with flask_client.session_transaction() as session:
         session['user_id'] = 1
     data = dict(id=country.id, name=country.name, continent_id=country.continentFK, status=FieldStatus.REJECTED)
-    response = flask_client.post(f'/admin/countries/edit?countryID={country.id}', data=data)
+    response = flask_client.post(f'/admin/countries/edit?countryID={country.id}', data=data,
+        follow_redirects=True)
     assert 'data saved' in response.text
     assert country.status == FieldStatus.REJECTED
 

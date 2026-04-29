@@ -10,10 +10,10 @@
     <input type="hidden" name="id" id="id" value="{{ place.id }}">
 
     <label for="name">Name</label>
-    <input name="name" id="name" value="{{ place.name or request.form.get('name', '') }}">
+    <input name="name" id="name" value="{{ request.form.get('name') or place.name }}">
 
     <label for="description">Description</label>
-    {{ ckeditor.create(name='description', value=(request.form.get('description', '') or place.description) ) }}
+    {{ ckeditor.create(name='description', value=(request.form.get('description') or place.description) ) }}
     {{ ckeditor.config(name='description', versionCheck=False) }}
 
     <label for="country">Country</label>

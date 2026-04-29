@@ -1,5 +1,6 @@
 # this file must be here to make this a module
-from sqlalchemy import sql, func, DateTime, cast, String
+from flask import session
+from sqlalchemy import ForeignKey, sql, func, DateTime, cast, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from datetime import datetime, UTC
@@ -19,9 +20,9 @@ class Base(db.Model):
 
     # fields
     id: Mapped[int] = mapped_column(primary_key=True, sort_order=-1)
-    cid: Mapped[int] = mapped_column(nullable=True)
+    cid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=True, default=lambda: session.get('user_id'))
     ct: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    uid: Mapped[int] = mapped_column(nullable=True)
+    uid: Mapped[int] = mapped_column(nullable=True, onupdate=lambda: session.get('user_id'))
     ut: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), 
         onupdate=lambda: datetime.now(UTC))
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())

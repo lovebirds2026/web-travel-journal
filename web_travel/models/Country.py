@@ -1,4 +1,4 @@
-from sqlalchemy import Index, UniqueConstraint, Enum as saEnum, ForeignKey
+from sqlalchemy import Enum as saEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import Base, FieldStatus
@@ -6,8 +6,6 @@ from . import Base, FieldStatus
 class Country(Base):
     __tablename__ = 'country'
     __table_args__ = (
-        # UniqueConstraint('name', name='U_name'),
-        # Index('IDX_status', 'status'),
         {'extend_existing': True, },
     )
 

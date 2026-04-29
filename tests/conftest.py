@@ -1,12 +1,15 @@
 import os
 import pytest
 import sqlite3
-from sqlalchemy import text
+from datetime import date
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 from web_travel import create_app, db
 from instance.config import TestingConfig
 from web_travel.models.Continent import Continent, FieldStatus
 from web_travel.models.Country import Country
 from web_travel.models.Place import Place
+from web_travel.models.Travel import Travel
 
 
 @pytest.fixture(scope='session')
@@ -40,25 +43,36 @@ def init_database(User):
     db.session.add(user1)
     db.session.add(user2)
 
-    continent1 = Continent(name='South America')
-    continent2 = Continent(name='Africa')
+    # either cid or app_context needs to be provided, otherwise session.get call in model fires
+    continent1 = Continent(name='South America', cid=1)
+    continent2 = Continent(name='Africa', cid=1)
     db.session.add(continent1)
     db.session.add(continent2)
 
-    country1 = Country(name='Bolivia', continentFK=1)
-    country2 = Country(name='Chad', continentFK=2)
-    country3 = Country(name='Sudan', continentFK=2, status=FieldStatus.REJECTED)
+    country1 = Country(name='Bolivia', continentFK=1, cid=1)
+    country2 = Country(name='Chad', continentFK=2, cid=1)
+    country3 = Country(name='Sudan', continentFK=2, cid=1, status=FieldStatus.REJECTED)
     db.session.add_all([country1, country2, country3])
 
-    place1 = Place(name='Hand of God', description='G', countryFK=2, ownerFK=2, status=FieldStatus.ACTIVE)
-    place2 = Place(name='place2', description='', countryFK=1, ownerFK=2, status=FieldStatus.REJECTED, deleted=True)
+    place1 = Place(name='Hand of God', description='G', countryFK=2, cid=2, status=FieldStatus.ACTIVE)
+    place2 = Place(name='place2', description='', countryFK=1, cid=2, status=FieldStatus.REJECTED, deleted=True)
     db.session.add_all([place1, place2])
+
+    date_ = date.fromisoformat('2026-04-27')
+    travel1 = Travel(title='Travel 1', description='', user_note='', date_from=date_, date_to=date_, 
+        public=True, cid=1)
+    db.session.add(travel1)
 
     db.session.commit()
 
     yield # pause point - testing happens here
 
     db.drop_all()
+
+
+@pytest.fixture
+def query_counter():
+    return QueryCounter
 
 
 def create_users_table():
@@ -93,3 +107,24 @@ def create_users_table():
     finally:
         conn.close()
 
+
+class QueryCounter:
+    """Context manager to count (and optionally print) SQLAlchemy queries."""
+    def __init__(self, print_sql: bool = False):
+        self._count = 0
+        self._print_sql = print_sql
+
+    def __enter__(self):
+        event.listen(Engine, "before_cursor_execute", self.callback)
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        event.remove(Engine, "before_cursor_execute", self.callback)
+
+    def callback(self, conn, cursor, statement, parameters, context, executemany):
+        self._count += 1
+        if self._print_sql:
+            print(f'\n--- Query #{self._count} ---\n{statement}\nparams: {parameters}')
+
+    def __call__(self):
+        return self._count

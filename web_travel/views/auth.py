@@ -160,6 +160,7 @@ def logout():
 # registers a function that runs before the view function, no matter what URL is requested.
 @bluepr.before_app_request # Note: I would just save the whole user in the session
 def load_logged_in_user():
+    session['last_url'] = request.full_path # experimental
     user_id = session.get('user_id')
 
     if user_id is None:
