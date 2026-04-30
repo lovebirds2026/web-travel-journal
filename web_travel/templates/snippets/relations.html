@@ -1,13 +1,15 @@
 
-<section class="travel relations">
-  <h2>Connected tags</h2>
+<section class="relations">
+  <h2>Connect tags</h2>
 
   <div class="selected">
-  {% for active_rel in travel.relations %}
+  {% if item and item.relations %}
+  {% for active_rel in item.relations %}
     <button type="button" data-rel="{{ active_rel.relation }}" data-id="{{ active_rel.relationFK }}">
       {{ current_relations[active_rel.relation][active_rel.relationFK] }}
     </button>
   {% endfor %}
+  {% endif %}
   </div>
   <br/>
 

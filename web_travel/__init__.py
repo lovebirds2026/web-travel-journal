@@ -12,9 +12,9 @@ from flask_ckeditor import CKEditor
 from instance.config import LOG_PATH, UPLOAD_PATH_PHOTOS, Config, TestingConfig
 
 # initial db setup
-class Base(DeclarativeBase):
+class SABase(DeclarativeBase):
     pass
-db = SQLAlchemy(model_class=Base) # sets up the engine and the scoped_session automatically
+db = SQLAlchemy(model_class=SABase) # sets up the engine and the scoped_session automatically
 
 mail = Mail()
 ckeditor = CKEditor()

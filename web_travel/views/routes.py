@@ -1,5 +1,5 @@
 from flask import current_app, Blueprint, flash, g, render_template, request, session, \
-    make_response, redirect, url_for
+    make_response, redirect, url_for, send_from_directory
 from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 
@@ -14,6 +14,8 @@ from ..models.Place import Place, FieldStatus
 from ..models.Country import Country
 from ..models.Travel import Travel
 from ..models.TravelRelation import TravelRelation
+from ..models.Photo import Photo
+from ..models.PhotoRelation import PhotoRelation
 from ..utils import save_photo
 
 bluepr = Blueprint('main', __name__) # web_travel.routes
@@ -30,21 +32,66 @@ def request_entity_too_large(error):
     return redirect(redirect_url)
 
 
+@bluepr.route('/photos/add', methods=['GET', 'POST'])
+@login_required
+def add_photos():
+    if request.method == 'POST':
+        # Process photo uploads
+        if True and 'photos' not in request.files or not request.files['photos'].filename:
+            flash('Please select some photos.', 'error')
+        else:
+            photos = []
+            relations = request.form.getlist('relations[]') # ['continent:2', 'country:3', ]
+            for file in request.files.getlist('photos'):
+                if fileinfo := save_photo(file): # saved on drive, now save in db
+                    flash(f'Photo {file.filename} uploaded.')
+                    name, ext = fileinfo.path.rsplit('.', maxsplit=1)
+                    photo = Photo(filename=name, extension=ext, size=fileinfo.size)
+                    photos.append(photo)
+
+                    if relations: # because it's new, only update if there are any
+                        photo.update_relations(relations)
+                else:
+                    flash(f'Invalid file: {file.filename}', 'error')
+                db.session.add_all(photos)
+                db.session.commit()
+
+    all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
+    return render_template('main/photos_edit.html', all_relations=all_relations)
+
 @bluepr.route('/photos', methods=['GET', 'POST'])
+@login_required
 def photos():
     if request.method == 'POST':
-        if 'photos' not in request.files or not request.files['photos'].filename:
-            flash('Please upload some photos.', 'error')
-        else:
-            photos = request.files.getlist('photos')
-            for photo in photos:
-                if save_photo(photo):
-                    flash(f'Photo {photo.filename} uploaded.')
-                else:
-                    flash(f'Invalid file: {photo.filename}', 'error')
-            log.debug(photos)
+        # Change public/hidden, status or DELETE
+        if edit_photo_id := request.form.get('photo_id'):
+            edit_photo = db.session.get(Photo, edit_photo_id)
+            if edit_photo and (g.user.is_admin or edit_photo.cid == g.user.id):
+                new_status = request.form.get('status')
+                if g.user.is_admin and new_status and new_status in FieldStatus:
+                    edit_photo.status = new_status
+                elif request.form.get('delete'):
+                    db.session.delete(edit_photo)
+                elif public := request.form.get('public'):
+                    edit_photo.public = int(public)
+                flash('Photo updated')
+                db.session.commit()
 
-    return render_template('main/add_photos.html')
+    stmt = db.select(Photo).order_by('id')
+    if g.user.is_admin:
+        stmt = stmt.options(selectinload(Photo.owner))
+    else:
+        stmt = stmt.where(Photo.cid == g.user.id)
+    photos = db.session.scalars(stmt).all()
+    for photo in photos:
+        photo._relations: dict = photo.get_relation_names()
+
+    return render_template('main/photos.html', photos=photos, field_statuses=FieldStatus)
+
+
+@bluepr.route('/uploads/photos/<filename>')
+def uploaded_photo(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER_PHOTOS'], filename)
 
 
 @bluepr.route('/travels', methods=['GET'])

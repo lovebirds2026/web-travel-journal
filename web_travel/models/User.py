@@ -16,6 +16,7 @@ class User(Base):
 
     places: Mapped[list['Place']] = relationship(back_populates='owner')
     travels: Mapped[list['Travel']] = relationship(back_populates='owner')
+    photos: Mapped[list['Photo']] = relationship(back_populates='owner')
 
     def __repr__(self):
         return f'User {self.username} with email {self.email} .'

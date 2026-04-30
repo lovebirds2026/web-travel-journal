@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% set active_page = "photos_edit" %}
+
+{% block header %}
+  <h2>{% block title %}Add photos{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data">
+    <label for="photos">Select Photos (max 4MB)</label>
+    <input type="file" name="photos" id="photos" multiple accept=".jpg,.jpeg,.avif,.png">
+
+    {# set item = [] #}
+    {% include 'snippets/relations.html' %}
+
+    <br/>
+    <input type="submit" value="Upload photos">
+  </form>
+
+{% endblock %}
