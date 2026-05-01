@@ -3,6 +3,8 @@
 # flags -v -s (print) -k (function) --last-failed  --setup-show!! 
 from sqlalchemy import desc
 from flask_mail import Message
+from pathlib import Path
+from werkzeug.datastructures import FileStorage
 
 from web_travel import db, mail
 from instance.config import Config
@@ -10,6 +12,8 @@ from web_travel.models.Continent import Continent
 from web_travel.models.Country import Country
 from web_travel.models.Place import Place
 from web_travel.models.Travel import Travel
+from web_travel.models.Photo import Photo
+from web_travel.utils import allowed_photo_ext, save_photo
 
 # general unit tests
 def test_index(flask_client):
@@ -42,6 +46,12 @@ def test_travel_table_exists(init_database):
     assert prepopulated_travel is not None
     assert prepopulated_travel.title == 'Travel 1'
 
+def test_photo_table_exists(init_database):
+    prepopulated_photo = db.session.scalar(db.select(Photo).order_by(desc('id')))
+    assert prepopulated_photo is not None
+    assert prepopulated_photo.filename == 'photo1'
+    assert prepopulated_photo.extension == 'png'
+
 def test_server_name_in_email():
     deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
 
@@ -54,3 +64,22 @@ def test_server_name_in_email():
         )
         mail.send(msg)
         assert outbox[0].subject.endswith('[DEV]')
+
+def test_upload_image(flask_client):
+    upload_path = Path(Config.UPLOAD_FOLDER_PHOTOS)
+    assert upload_path.is_dir()
+
+    assets_folder = Path(__file__).parent / 'assets'
+    test_file_fail = assets_folder / 'testpdf.pdf'
+    with open(test_file_fail, 'rb') as fp:
+        file = FileStorage(fp)
+    assert allowed_photo_ext(file.filename) == False
+    assert not save_photo(file)
+
+    test_file_ok = assets_folder / 'screen.png'
+    with open(test_file_ok, 'rb') as fp:
+        file = FileStorage(fp)
+        result = save_photo(file)
+        assert result.path and result.size > 0
+        # clean up
+        (upload_path / result.path).unlink()

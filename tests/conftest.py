@@ -10,6 +10,7 @@ from web_travel.models.Continent import Continent, FieldStatus
 from web_travel.models.Country import Country
 from web_travel.models.Place import Place
 from web_travel.models.Travel import Travel
+from web_travel.models.Photo import Photo
 
 
 @pytest.fixture(scope='session')
@@ -62,6 +63,10 @@ def init_database(User):
     travel1 = Travel(title='Travel 1', description='', user_note='', date_from=date_, date_to=date_, 
         public=True, cid=1)
     db.session.add(travel1)
+
+    photo1 = Photo(filename='photo1', extension='jpg', size=0, cid=2)
+    photo2 = Photo(filename='photo1', extension='png', size=0, cid=2, public=True, status=FieldStatus.ACTIVE)
+    db.session.add_all([photo1, photo2])
 
     db.session.commit()
 

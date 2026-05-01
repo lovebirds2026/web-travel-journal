@@ -61,14 +61,13 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 - Introduce a proper UI/UX all around the site :-()
 
 ## File Structure
-.
-|-- .coverage
-|-- LICENSE
+```.
 |-- README.md
+|-- pyproject.toml
+|-- LICENSE
 |-- instance
 |   |-- config.py
 |   `-- test.db
-|-- pyproject.toml
 |-- tests
 |   |-- conftest.py
 |   |-- test_admin.py
@@ -132,3 +131,4 @@ A Flask + SQLAlchemy project I built during my Python web development study.
     |       `-- relations.html
     |-- utils.py
     `-- wsgi.py
+```
