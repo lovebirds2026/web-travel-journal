@@ -53,7 +53,7 @@
     });
   });
 
-  // prepare form submit field
+  // prepare form input fields
   form.addEventListener('submit', function () {
     form.querySelectorAll('input[name="relations[]"]').forEach(n => n.remove());
     selected.querySelectorAll('button[data-rel]').forEach(b => {

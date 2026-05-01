@@ -37,7 +37,7 @@ def request_entity_too_large(error):
 def add_photos():
     if request.method == 'POST':
         # Process photo uploads
-        if True and 'photos' not in request.files or not request.files['photos'].filename:
+        if 'photos' not in request.files or not request.files['photos'].filename:
             flash('Please select some photos.', 'error')
         else:
             photos = []
@@ -74,6 +74,9 @@ def photos():
                     db.session.delete(edit_photo)
                 elif public := request.form.get('public'):
                     edit_photo.public = int(public)
+                else: # relations-only update
+                    relations = request.form.getlist('relations[]')
+                    edit_photo.update_relations(relations)
                 flash('Photo updated')
                 db.session.commit()
 
@@ -86,7 +89,9 @@ def photos():
     for photo in photos:
         photo._relations: dict = photo.get_relation_names()
 
-    return render_template('main/photos.html', photos=photos, field_statuses=FieldStatus)
+    all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
+    return render_template('main/photos.html', photos=photos, field_statuses=FieldStatus,
+        all_relations=all_relations)
 
 
 @bluepr.route('/uploads/photos/<filename>')

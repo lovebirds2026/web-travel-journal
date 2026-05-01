@@ -16,6 +16,7 @@
       <span class="span-right">
         <a href="javascript:void(0)" class="dialog-trigger" data-photo-id="{{ photo.id }}"
            data-statuses="{{ field_statuses | reject('equalto', photo.status) | join(':') }}"
+           data-relations="{% for r in photo.relations %}{{ r.relation }}:{{ r.relationFK }}{% if not loop.last %},{% endif %}{% endfor %}"
            data-public="{{ 1 if photo.public else 0 }}">Actions</a>
       </span>
       <div class="photo-relations">
@@ -56,6 +57,16 @@
     <form method="dialog">
       <button>Cancel</button>
     </form>
+
+    <br/><hr/><br/>
+
+    <form method="post">
+      <input type="hidden" name="photo_id" class="ad-photo-id">
+      <button type="submit">Save tags</button>
+
+      {% include 'snippets/relations.html' %}
+    </form>
+
   </dialog>
 
 {% endblock %}
@@ -63,6 +74,9 @@
 {% block scripts %}
   <script>
     const dialog = document.getElementById('actions-dialog');
+    const relsSelected  = dialog.querySelector('section.relations .selected');
+    const relsAvailable = dialog.querySelector('section.relations .available');
+    const relsFilter = dialog.querySelector('section.relations .available input[name="_filter"]');
     const idInputs = dialog.querySelectorAll('.ad-photo-id');
     const statusInputs = document.querySelectorAll('.ad-status-value');
     const publicInput = document.getElementById('ad-public-value');
@@ -70,6 +84,22 @@
 
     document.querySelectorAll('.dialog-trigger').forEach(a => {
       a.addEventListener('click', () => {
+        // RELATIONS:
+        // reset previous modal state (move all selected buttons to available)
+        relsSelected.querySelectorAll('button[data-rel]').forEach(btn => {
+          relsAvailable.querySelector('[data-rel-group="' + btn.dataset.rel + '"]').appendChild(btn);
+        });
+        relsFilter.value = ''; // reset filter
+        relsAvailable.querySelectorAll('button[data-rel]').forEach(b => b.hidden = false);
+
+        // preselect current photo relations (move from available to selected)
+        (a.dataset.relations || '').split(',').filter(Boolean).forEach(pair => {
+          const [rel, id] = pair.split(':');
+          const btn = relsAvailable.querySelector('button[data-rel="' + rel + '"][data-id="' + id + '"]');
+          if (btn) relsSelected.appendChild(btn);
+        });
+
+        // other Action buttons
         const isPublic = a.dataset.public === '1';
         const statuses = a.dataset.statuses.split(':')
         idInputs.forEach(i => i.value = a.dataset.photoId);
