@@ -21,6 +21,7 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 - JWT (`pyjwt`)
 - Jinja templates + light vanilla JS
 - Pytest/Coverage
+- Github Actions for CD
 - Jira with a dedicated Project Lead
 
 ## Quietly technical parts I am proud of
