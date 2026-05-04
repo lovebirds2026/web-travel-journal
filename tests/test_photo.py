@@ -33,7 +33,7 @@ def test_photos_http_edit_relations(flask_client):
     assert 'Photo updated' in response.text
     assert 'Africa' not in response.text
     assert 'Travel 1' not in response.text
-    assert 'South America' in response.text
+    assert 'MISSING' in response.text
 
     # clear user from session
     with flask_client.session_transaction() as session:

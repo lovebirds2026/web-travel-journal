@@ -1,3 +1,5 @@
+[![Deploy Web Travel Journal [DEV]](https://github.com/lovebirds2026/web-travel-journal/actions/workflows/deploy.yml/badge.svg)](https://github.com/lovebirds2026/web-travel-journal/actions/workflows/deploy.yml)
+
 # Web Travel Journal
 
 A Flask + SQLAlchemy project I built during my Python web development study.  
@@ -21,7 +23,7 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 - JWT (`pyjwt`)
 - Jinja templates + light vanilla JS
 - Pytest/Coverage
-- Github Actions for CD
+- Github Actions for CI/CD
 - Jira with a dedicated Project Lead
 
 ## Quietly technical parts I am proud of
@@ -46,6 +48,9 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 - Testing setup:
   - fixtures for bootstrapping app/db state
   - focused tests for auth, admin access, and core entities
+- Automated deployment:
+  - built a local deploy script first with rollback on test failure
+  - evolved it into pipeline-driven deployment via Github Actions
 
 ## What I learned building this
 
