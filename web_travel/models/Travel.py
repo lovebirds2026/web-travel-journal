@@ -1,24 +1,20 @@
-from sqlalchemy import Index, ForeignKey, sql, update
+from sqlalchemy import Index, sql, update
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from datetime import date
-from collections import defaultdict
 
 from .. import db
-from . import Base
-from .Continent import Continent
-from .Country import Country
-from .Place import Place
+from . import Base, HasRelationsMixin
 from .TravelRelation import TravelRelation
 
-class Travel(Base):
+class Travel(HasRelationsMixin, Base):
     __tablename__ = 'travel'
     __table_args__ = (
         Index('IDX_from_to', 'date_from', 'date_to'),
         {'extend_existing': True, },
     )
 
-    _searchable_fields = ('title', )
+    _searchable_fields = ('title', 'description', 'user_note', )
 
     title: Mapped[str] = mapped_column(index=True) # may need to change this to "name"
     description: Mapped[str]
@@ -29,7 +25,7 @@ class Travel(Base):
     
     owner: Mapped['User'] = relationship(back_populates='travels')
     relations: Mapped[list['TravelRelation']] = relationship(back_populates='travel', cascade='all, delete-orphan')
-    
+
 
     @classmethod
     def validate_input(cls, form: dict) -> list:
@@ -78,30 +74,10 @@ class Travel(Base):
         db.session.commit()
 
 
-    def update_relations(self, relations):
-        submitted = {tuple(rel.split(':')) for rel in relations}
-        existing = {(tr.relation, str(tr.relationFK)) for tr in self.relations}
-        # add
-        for rel_type, rel_id in submitted - existing:
-            self.relations.append(TravelRelation(relation=rel_type, relationFK=int(rel_id)))
-        # remove
-        for tr in list(self.relations):
-            if(tr.relation, str(tr.relationFK)) not in submitted:
-                self.relations.remove(tr)
+    @classmethod
+    def get_own(cls, user_id, admin=False):
+        stmt = db.select(Travel).where(Travel.deleted == False).order_by(Travel.title.asc())
+        if not admin:
+            stmt = stmt.where(Travel.cid == user_id)
+        return db.session.scalars(stmt).all()
 
-
-    def get_relation_names(self) -> dict[str, dict[int, str | None]]:
-        buckets: dict[str, dict[int, str]] = defaultdict(dict) # {'country': {1: 'Italy', 2: 'Brazil'}, ..}
-        for tr in self.relations:
-            buckets[tr.relation][tr.relationFK] = None # will be the name
-
-        model_map = {'continent': Continent, 'country': Country, 'place': Place}
-        for rel, ids_vals in buckets.items():
-            Model = model_map[rel]
-            stmt = db.select(Model.id, Model.name).where(Model.id.in_(ids_vals.keys())).order_by(Model.name)
-            rows = db.session.execute(stmt).all()
-            buckets[rel] = {} # clear the dict to insert sorted names
-            for row_id, row_name in rows:
-                buckets[rel][row_id] = row_name
-
-        return dict(buckets)

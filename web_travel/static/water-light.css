@@ -943,11 +943,7 @@ form > input#my {
   vertical-align: unset;
 }
 
-@media (min-width:769px) {
-  textarea {
-    max-width: 60%;
-  }
-}
+
 
 form .dateholder > div:first-child {
   float: left;
@@ -986,3 +982,56 @@ form .dateholder > div:first-child {
   }
 
 } 
+
+div.photos-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+div.photo-holder img {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 4 :3 for landscape etc.*/
+    object-fit: cover;
+}
+div.photos-container {
+  .span-left {
+    float: left;
+  }
+  .span-right {
+    float: right;
+  }
+  .photo-relations {
+    clear: both;
+    padding-top: 0.25rem;
+  }
+
+  code {
+    background-color: seashell; /* azure honeydew seashell oldlace */
+    border: 2px outset whitesmoke;
+  }
+}
+#actions-dialog {
+  width: 43em;
+
+  form {
+    display: inline;
+  }
+  .danger {
+    background: #c0392b;
+    color: #fff;
+  }
+}
+
+
+
+/*Responsive design*/
+@media (min-width:769px) {
+  textarea {
+    max-width: 60%;
+  }
+}
+@media (min-width:1279px) {
+  div.photos-container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}

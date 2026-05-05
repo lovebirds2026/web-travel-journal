@@ -36,7 +36,8 @@
     <input type="checkbox" name="public" id="public" {{ 'checked' if travel.public }}>
     <br/><br/>
 
-    {% include 'snippets/travel_relations.html' %}
+    {% set item = travel %}
+    {% include 'snippets/relations.html' %}
     <br/><br/>
 
     <input type="submit" class="inline" value="Save changes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, UTC
 import time
 import re
 from pathlib import Path
+from collections import namedtuple
 
 JWT_ALGO = 'HS512'
 ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'avif', 'png', ] # pics only
@@ -34,14 +35,16 @@ def allowed_photo_ext(filename) -> bool:
             return True
     return False
 
-def save_photo(file) -> bool:
+def save_photo(file) -> tuple | None:
     timestamp_str = str(datetime.now().timestamp()).split('.')[0]
     if file and allowed_photo_ext(file.filename):
         filename = secure_filename(file.filename)
 
         # add timestamp
-        ind = filename.rfind('.')
-        filename = filename[:ind] + '_' + timestamp_str + filename[ind:]
-        file.save(Path(current_app.config['UPLOAD_FOLDER_PHOTOS']) / filename)
-        return True
-    return False
+        ext_index = filename.rfind('.')
+        filename = filename[:ext_index] + '_' + timestamp_str + filename[ext_index:]
+        dest = Path(current_app.config['UPLOAD_FOLDER_PHOTOS']) / filename
+        file.save(dest)
+        size = dest.stat().st_size
+        ImageInfo = namedtuple('ImageInfo', ('path', 'size'))
+        return ImageInfo(filename, size)
