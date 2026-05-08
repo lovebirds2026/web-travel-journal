@@ -44,7 +44,7 @@ def add_photos():
             relations = request.form.getlist('relations[]') # ['continent:2', 'country:3', ]
             for file in request.files.getlist('photos'):
                 if fileinfo := save_photo(file): # saved on drive, now save in db
-                    flash(f'Photo {file.filename} uploaded.')
+                    flash(f'Photo {fileinfo.path} uploaded.')
                     name, ext = fileinfo.path.rsplit('.', maxsplit=1)
                     photo = Photo(filename=name, extension=ext, size=fileinfo.size)
                     photos.append(photo)
@@ -97,6 +97,10 @@ def photos():
 @bluepr.route('/uploads/photos/<filename>')
 def uploaded_photo(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER_PHOTOS'], filename)
+
+@bluepr.route('/uploads/photos/thumbnails/<filename>')
+def uploaded_thumbnail(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER_THUMBS'], filename)
 
 
 @bluepr.route('/travels', methods=['GET'])
