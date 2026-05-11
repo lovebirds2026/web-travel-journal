@@ -4,7 +4,7 @@
 <title>{% block title %}{% endblock %}{{ title }} - Web Travel Journal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lovebirds_ico.ico') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='water-light.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='water-light.css', v=0.2) }}">
 
 <nav>
   <div class="top-row">
@@ -27,12 +27,12 @@
 
   <ul class="main-menu">
     <li class="{{ 'active' if request.path == '/' }}"><a href="{{ url_for('main.index') }}">Home</a></li>
-    <li class="{{ 'active' if request.path == '/places' }}"><a href="{{ url_for('main.places') }}">Places:</a></li>
+    <li class="{{ 'active' if request.path == '/places' }}"><a href="{{ url_for('main.places') }}">My Places:</a></li>
   {% if g.user %}
     <li class="{{ 'active' if request.path.startswith('/places/edit') }}"><a href="{{ url_for('main.add_edit_place') }}"><i>Add</i></a></li>
     <li class="{{ 'active' if request.path == '/travels' }}"><a href="{{ url_for('main.travels') }}">My travels:</a></li>
     <li class="{{ 'active' if request.path.startswith('/travels/edit') }}"><a href="{{ url_for('main.add_edit_travel') }}"><i>Add</i></a></li>
-    <li class="{{ 'active' if request.path == '/photos' }}"><a href="{{ url_for('main.photos') }}">Photos</a></li>
+    <li class="{{ 'active' if request.path == '/photos' }}"><a href="{{ url_for('main.photos') }}">My Photos</a></li>
     <li class="{{ 'active' if request.path == '/photos/add' }}"><a href="{{ url_for('main.add_photos') }}"><i>Add</i></a></li>
   {% endif %}
   {% if g.user and g.user.is_admin %}

@@ -167,3 +167,14 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = db.session.get(User, user_id)
+
+
+@bluepr.after_app_request
+def add_cache_headers(response):
+    match response.mimetype:
+        case 'text/html': max_age = 3600
+        case 'text/css': max_age = 3600 * 24
+        case _: max_age = 3600 * 24 * 30
+    response.cache_control.no_cache = False
+    response.cache_control.max_age = max_age
+    return response

@@ -27,7 +27,7 @@ def index():
 
 @bluepr.errorhandler(413)
 def request_entity_too_large(error):
-    flash(f'Max file size is {current_app.config['MAX_CONTENT_LENGTH'] // 1000000} MB.', 'error')
+    flash(f'Max total size is {current_app.config['MAX_CONTENT_LENGTH'] // 1000000} MB.', 'error')
     redirect_url = session.get('last_url', url_for('main.photos'))
     return redirect(redirect_url)
 
