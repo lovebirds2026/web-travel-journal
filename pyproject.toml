@@ -19,6 +19,7 @@ test = ["pytest>=7.0"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 cache_dir = ".pytest_cache"
+markers = ["integration: external services like Redis"]
 
 [project.urls]
 Homepage = "https://github.com/DenislavD/web-travel-journal"
