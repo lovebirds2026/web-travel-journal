@@ -13,7 +13,7 @@ def guest_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is not None:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
         return view(**kwargs)
 
     return wrapped_view
@@ -33,7 +33,7 @@ def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None or not g.user.is_admin:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
         return view(**kwargs)
 
     return wrapped_view
@@ -101,7 +101,7 @@ def login():
             session.clear()
             session['user_id'] = user.id # atob(session.split('.')[0]) in browser console
             session['is_admin'] = user.is_admin
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
 
         flash(error, 'error')
 
@@ -127,7 +127,7 @@ def reset_password():
     if token_param:
         token = decode_token(token_param)
     if not token_param or not token:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('public.index'))
 
     if request.method == 'POST':
         password = request.form['password']

@@ -6,6 +6,7 @@
 
 {% block content %}
   <form method="get" class="form_filters">
+  {% if g.user %}
     <label for="status">Status:</label>
     <select name="status" id="status">
       <option value="">All
@@ -20,6 +21,7 @@
       <option value="1" {{ 'selected' if request.args.get('deleted') == '1' }}>Yes
       <option value="0" {{ 'selected' if request.args.get('deleted') == '0' }}>No
     </select>
+  {% endif %}
 
     <label for="country_id">Country:</label>
     <select name="country_id" id="country_id">
@@ -39,8 +41,10 @@
       <option value="description" {{ 'selected' if request.args.get('search_field') == 'description' }}>Description
     </select>
 
+  {% if g.user %}
     <label for="my">My places</label>
     <input type="checkbox" name="my" id="my" {{ 'checked' if request.args.get('my') }}>
+  {% endif %}
 
     <input type="submit" value="Apply filter">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <a href="{{ request.base_url }}"><button type="button">Reset</button></a>
@@ -71,12 +75,12 @@
             {% if g.user and g.user.is_admin %}
               {% set args = dict(request.args) %}
               {% set _ = args.update({'del': place.id}) %}
-              <a href="{{ url_for('main.places', **args) }}">
+              <a href="{{ url_for('logged.places', **args) }}">
                 {{ 'Undelete' if place.deleted else 'Delete' }}
               </a> | 
             {% endif %}
             {% if g.user and (g.user.is_admin or place.owner.id == g.user.id) %}
-              <a href="{{ url_for('main.add_edit_place', placeID=place.id) }}">Edit</a>
+              <a href="{{ url_for('logged.add_edit_place', placeID=place.id) }}">Edit</a>
             {% else %}
             -
             {% endif %}

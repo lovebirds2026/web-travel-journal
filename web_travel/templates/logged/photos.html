@@ -10,8 +10,8 @@
   <div class="photos-container">
   {% for photo in photos %}
     <div class="photo-holder">
-      {% set photo_thumb = url_for('main.uploaded_thumbnail', filename=(photo.filename + '.' + photo.extension)) %}
-      {% set photo_link = url_for('main.uploaded_photo', filename=(photo.filename + '.' + photo.extension)) %}
+      {% set photo_thumb = url_for('public.uploaded_thumbnail', filename=(photo.filename + '.' + photo.extension)) %}
+      {% set photo_link = url_for('public.uploaded_photo', filename=(photo.filename + '.' + photo.extension)) %}
       <a href="{{ photo_link }}"><img src="{{ photo_thumb }}" width="100%" height="100%" /></a>
       <span class="span-left">{{ 'Public' if photo.public else 'Hidden' }} | {{ photo.status }}</span>
       <span class="span-right">

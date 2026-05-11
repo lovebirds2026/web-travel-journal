@@ -18,46 +18,15 @@ from ..models.Photo import Photo
 from ..models.PhotoRelation import PhotoRelation
 from ..utils import save_photo
 
-bluepr = Blueprint('main', __name__) # web_travel.routes
-
-@bluepr.route('/')
-def index():
-    return render_template('main/index.html', title='Home')
+bluepr = Blueprint('logged', __name__) # web_travel.routes_logged
 
 
 @bluepr.errorhandler(413)
 def request_entity_too_large(error):
     flash(f'Max total size is {current_app.config['MAX_CONTENT_LENGTH'] // 1000000} MB.', 'error')
-    redirect_url = session.get('last_url', url_for('main.photos'))
+    redirect_url = session.get('last_url', url_for('logged.photos'))
     return redirect(redirect_url)
 
-
-@bluepr.route('/photos/add', methods=['GET', 'POST'])
-@login_required
-def add_photos():
-    if request.method == 'POST':
-        # Process photo uploads
-        if 'photos' not in request.files or not request.files['photos'].filename:
-            flash('Please select some photos.', 'error')
-        else:
-            photos = []
-            relations = request.form.getlist('relations[]') # ['continent:2', 'country:3', ]
-            for file in request.files.getlist('photos'):
-                if fileinfo := save_photo(file): # saved on drive, now save in db
-                    flash(f'Photo {fileinfo.path} uploaded.')
-                    name, ext = fileinfo.path.rsplit('.', maxsplit=1)
-                    photo = Photo(filename=name, extension=ext, size=fileinfo.size)
-                    photos.append(photo)
-
-                    if relations: # because it's new, only update if there are any
-                        photo.update_relations(relations)
-                else:
-                    flash(f'Invalid file: {file.filename}', 'error')
-                db.session.add_all(photos)
-                db.session.commit()
-
-    all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
-    return render_template('main/photos_edit.html', all_relations=all_relations)
 
 @bluepr.route('/photos', methods=['GET', 'POST'])
 @login_required
@@ -90,17 +59,36 @@ def photos():
         photo._relations: dict = photo.get_relation_names()
 
     all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
-    return render_template('main/photos.html', photos=photos, field_statuses=FieldStatus,
+    return render_template('logged/photos.html', photos=photos, field_statuses=FieldStatus,
         all_relations=all_relations)
 
 
-@bluepr.route('/uploads/photos/<filename>')
-def uploaded_photo(filename):
-    return send_from_directory(current_app.config['UPLOAD_FOLDER_PHOTOS'], filename)
+@bluepr.route('/photos/add', methods=['GET', 'POST'])
+@login_required
+def add_photos():
+    if request.method == 'POST':
+        # Process photo uploads
+        if 'photos' not in request.files or not request.files['photos'].filename:
+            flash('Please select some photos.', 'error')
+        else:
+            photos = []
+            relations = request.form.getlist('relations[]') # ['continent:2', 'country:3', ]
+            for file in request.files.getlist('photos'):
+                if fileinfo := save_photo(file): # saved on drive, now save in db
+                    flash(f'Photo {fileinfo.path} uploaded.')
+                    name, ext = fileinfo.path.rsplit('.', maxsplit=1)
+                    photo = Photo(filename=name, extension=ext, size=fileinfo.size)
+                    photos.append(photo)
 
-@bluepr.route('/uploads/photos/thumbnails/<filename>')
-def uploaded_thumbnail(filename):
-    return send_from_directory(current_app.config['UPLOAD_FOLDER_THUMBS'], filename)
+                    if relations: # because it's new, only update if there are any
+                        photo.update_relations(relations)
+                else:
+                    flash(f'Invalid file: {file.filename}', 'error')
+                db.session.add_all(photos)
+                db.session.commit()
+
+    all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
+    return render_template('logged/photos_edit.html', all_relations=all_relations)
 
 
 @bluepr.route('/travels', methods=['GET'])
@@ -113,7 +101,7 @@ def travels():
         stmt = stmt.where(Travel.cid == g.user.id)
     travels = db.session.scalars(stmt).all()
 
-    return render_template('main/travels.html', travels=travels)
+    return render_template('logged/travels.html', travels=travels)
 
 
 @bluepr.route('/travels/edit', methods=['GET', 'POST']) #travelID=<int>
@@ -123,7 +111,7 @@ def add_edit_travel():
     if travel_id:
         travel = db.session.get(Travel, travel_id)
         if not g.user.is_admin and (not travel or not travel.cid == g.user.id):
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
 
     if request.method == 'POST':
         errors = Travel.validate_input(request.form)
@@ -133,17 +121,18 @@ def add_edit_travel():
         else:
             Travel.add_edit(request.form)
             flash('Travel data saved.')
-            return redirect(url_for('main.travels'))
+            return redirect(url_for('logged.travels'))
 
     travel = db.session.get(Travel, travel_id)
     relations: dict = travel.get_relation_names() if travel else {}
     all_relations = TravelRelation.as_dict(exclude=relations)
 
-    return render_template('main/travels_edit.html', travel=travel, current_relations=relations,
+    return render_template('logged/travels_edit.html', travel=travel, current_relations=relations,
         all_relations=all_relations)
 
 
 @bluepr.route('/places', methods=['GET'])
+# @login_required
 def places():
     if g.user and g.user.is_admin and request.args.get('del'):
         place_id = request.args.get('del')
@@ -177,7 +166,7 @@ def places():
     places = db.session.scalars(stmt).all()
     countries = Country.get_active()
 
-    return render_template('main/places.html', places=places, countries=countries, 
+    return render_template('logged/places.html', places=places, countries=countries, 
         field_statuses=FieldStatus)
 
 
@@ -188,7 +177,7 @@ def add_edit_place():
     if place_id:
         place = db.session.get(Place, place_id)
         if not g.user.is_admin and (not place or not place.cid == g.user.id):
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
 
     if request.method == 'POST':
         errors = Place.add_edit(request.form, is_admin=g.user.is_admin)
@@ -197,12 +186,12 @@ def add_edit_place():
                 flash(msg, 'error')
         else:
             flash('Place data saved.')
-            return redirect(url_for('main.places'))
+            return redirect(url_for('logged.places'))
 
     place = db.session.get(Place, place_id)
     countries = Country.get_active()
 
-    return render_template('main/places_edit.html', place=place, field_statuses=FieldStatus,
+    return render_template('logged/places_edit.html', place=place, field_statuses=FieldStatus,
         countries=countries)
 
 
@@ -227,5 +216,5 @@ def user_account():
         else:
             flash(error, 'error')
 
-    return render_template('main/user.html')
+    return render_template('logged/user.html')
 
