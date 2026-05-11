@@ -5,5 +5,14 @@
 {% endblock %}
 
 {% block content %}
-  what should we have here?
+  {% set left_title = 'Continents' %}
+  {% set left_items = continents %}
+  {% set left_href_prefix = '/continents/' %}
+
+  {% set right_title = 'Countries' %}
+  {% set right_items = countries %}
+  {% set right_href_prefix = '/countries/' %}
+
+  {% include 'snippets/public_two_column_browser.html' %}
+
 {% endblock %}

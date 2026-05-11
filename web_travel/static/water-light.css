@@ -1023,11 +1023,69 @@ div.photos-container {
 }
 
 
+/* public browser layout */
+.public-browser {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2.5rem;
+}
+.public-browser-col h3 {
+  margin-top: 0;
+}
+.public-browser-grid {
+  display: grid;
+  gap: 0.6rem;
+}
+.public-browser-left .public-browser-grid {
+  grid-template-columns: 1fr;
+}
+.public-browser-right {
+  border-left: 1px solid var(--border);
+  padding-left: 2rem;
+}
+.public-browser-right .public-browser-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.public-card {
+  display: block;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: var(--background-alt);
+}
+.public-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.35rem;
+}
+.public-card span {
+  display: block;
+  text-align: center;
+}
+.public-card:hover {
+  text-decoration: none;
+  background: var(--background);
+}
+
 
 /*Responsive design*/
 @media (min-width:769px) {
   textarea {
     max-width: 60%;
+  }
+}
+@media (max-width:768px) {
+  .public-browser {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .public-browser-right {
+    border-left: none;
+    padding-left: 0;
+  }
+  .public-browser-right .public-browser-grid {
+    grid-template-columns: 1fr;
   }
 }
 @media (min-width:1279px) {

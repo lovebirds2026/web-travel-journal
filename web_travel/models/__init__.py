@@ -28,6 +28,18 @@ class Base(db.Model):
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())
 
 
+    def get_thumbnail(self) -> tuple[str, str] | None: # @TODO: check if it gets cached
+        from .Photo import Photo
+        from .PhotoRelation import PhotoRelation
+        print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
+        scalar_subq = (db.select(PhotoRelation.photoFK)
+            .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id)
+            .order_by(PhotoRelation.id.desc()).limit(1).scalar_subquery())
+        photo = db.session.execute(
+            db.select(Photo.filename, Photo.extension).where(Photo.id == scalar_subq)
+        ).first()
+        return photo
+
     @classmethod
     def search_and_filter(cls, filters, search_field=None, search_text=None):
         stmt = db.select(cls).filter_by(**filters)
