@@ -1,4 +1,5 @@
 from flask import current_app, Blueprint, render_template, send_from_directory, url_for
+from random import shuffle
 
 import logging
 log = logging.getLogger(__name__)
@@ -17,24 +18,16 @@ bluepr = Blueprint('public', __name__)
 @bluepr.route('/')
 def index():
     continents = Continent.get_active()
-    countries = Country.get_active()
+    shuffle(continents)
     for continent in continents:
-        thumb = continent.get_thumbnail()
-        if thumb:
-            continent.thumbnail = url_for('public.uploaded_thumbnail', filename=thumb.filename + '.' + thumb.extension)
-        else:
-            continent.thumbnail = url_for('static', filename='world_placeholder.png')
-        # print(continent.name, continent.thumbnail)
+        continent.img = continent.get_thumbnail() # n queries (7)
 
-    for country in countries:
-        thumb = country.get_thumbnail()
-        if thumb:
-            country.thumbnail = url_for('public.uploaded_thumbnail', filename=thumb.filename + '.' + thumb.extension)
-        else:
-            country.thumbnail = url_for('static', filename='world_placeholder.png')
+    # new approach: get right cards
+    right_cards = PhotoRelation.get_card_data(Continent)
+    shuffle(right_cards)
 
     return render_template('public/index.html', title='Home', continents=continents,
-        countries=countries)
+        countries=right_cards)
 
 
 @bluepr.route('/uploads/photos/<filename>')

@@ -18,6 +18,8 @@ class Base(db.Model):
 
     _searchable_fields = NotImplemented
 
+    _POLYMORPHIC_MODEL_MAP = {}
+
     # fields
     id: Mapped[int] = mapped_column(primary_key=True, sort_order=-1)
     cid: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=True, default=lambda: session.get('user_id'))
@@ -34,10 +36,10 @@ class Base(db.Model):
         print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
         scalar_subq = (db.select(PhotoRelation.photoFK)
             .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id)
-            .order_by(PhotoRelation.id.desc()).limit(1).scalar_subquery())
+            .order_by(PhotoRelation.photoFK.desc()).limit(1).scalar_subquery())
         photo = db.session.execute(
-            db.select(Photo.filename, Photo.extension).where(Photo.id == scalar_subq)
-        ).first()
+            db.select(func.concat(Photo.filename, '.', Photo.extension)).where(Photo.id == scalar_subq)
+        ).scalar()
         return photo
 
     @classmethod
@@ -55,25 +57,27 @@ class Base(db.Model):
         ).order_by(cls.name.asc())
         return db.session.scalars(stmt).all()
 
+    @classmethod
+    def get_model_class(cls, tablename: str):
+        if not Base._POLYMORPHIC_MODEL_MAP:
+            # populate class attribute (once)
+            for mapper in db.Model.registry.mappers:
+                if t_name := getattr(mapper.class_, '__tablename__', False):
+                    Base._POLYMORPHIC_MODEL_MAP[t_name] = mapper.class_
+        return Base._POLYMORPHIC_MODEL_MAP[tablename]
+
 
 class HasRelationsMixin:
     """ Adds useful methods for the 'relations' model attribute """
 
     def get_relation_names(self) -> dict[str, dict[int, str | None]]:
-        # avoid circular import with Base
-        from .Continent import Continent
-        from .Country import Country
-        from .Place import Place
-        from .Travel import Travel
-
         buckets: dict[str, dict[int, str]] = defaultdict(dict) # {'country': {1: 'Italy', 2: 'Brazil'}, ..}
         for tr in self.relations:
             buckets[tr.relation][tr.relationFK] = None # will be the name
 
-        model_map = {'continent': Continent, 'country': Country, 'place': Place, 'travel': Travel}
         for rel, ids_vals in buckets.items():
-            Model = model_map[rel]
-            name_col = Model.title if Model is Travel else Model.name
+            Model = self.get_model_class(rel)
+            name_col = getattr(Model, 'name', False) or Model.title
             stmt = db.select(Model.id, name_col).where(Model.id.in_(ids_vals.keys())).order_by(name_col)
             rows = db.session.execute(stmt).all()
             buckets[rel] = {} # clear the dict to insert sorted names

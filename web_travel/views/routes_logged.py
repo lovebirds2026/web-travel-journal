@@ -1,5 +1,4 @@
-from flask import current_app, Blueprint, flash, g, render_template, request, session, \
-    make_response, redirect, url_for, send_from_directory
+from flask import current_app, Blueprint, flash, g, render_template, request, session, redirect, url_for
 from sqlalchemy import update
 from sqlalchemy.orm import selectinload
 

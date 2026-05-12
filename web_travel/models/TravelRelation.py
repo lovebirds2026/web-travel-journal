@@ -29,6 +29,7 @@ class TravelRelation(db.Model): # no need to get the default fields.. I think.
 
     @classmethod
     def as_dict(cls, exclude: dict=None):
+        """ All possible relations for attaching to a travel """
         if not exclude:
             exclude = {}
         return {
