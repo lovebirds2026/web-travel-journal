@@ -13,7 +13,7 @@ def guest_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is not None:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
         return view(**kwargs)
 
     return wrapped_view
@@ -33,7 +33,7 @@ def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None or not g.user.is_admin:
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
         return view(**kwargs)
 
     return wrapped_view
@@ -101,7 +101,7 @@ def login():
             session.clear()
             session['user_id'] = user.id # atob(session.split('.')[0]) in browser console
             session['is_admin'] = user.is_admin
-            return redirect(url_for('main.index'))
+            return redirect(url_for('public.index'))
 
         flash(error, 'error')
 
@@ -127,7 +127,7 @@ def reset_password():
     if token_param:
         token = decode_token(token_param)
     if not token_param or not token:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('public.index'))
 
     if request.method == 'POST':
         password = request.form['password']
@@ -158,7 +158,7 @@ def logout():
 
 
 # registers a function that runs before the view function, no matter what URL is requested.
-@bluepr.before_app_request # Note: I would just save the whole user in the session
+@bluepr.before_app_request
 def load_logged_in_user():
     session['last_url'] = request.full_path # experimental
     user_id = session.get('user_id')
@@ -167,3 +167,14 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = db.session.get(User, user_id)
+
+
+@bluepr.after_app_request
+def add_cache_headers(response):
+    match response.mimetype:
+        case 'text/html': max_age = 3600
+        case 'text/css': max_age = 3600 * 24
+        case _: max_age = 3600 * 24 * 30
+    response.cache_control.no_cache = False
+    response.cache_control.max_age = max_age
+    return response

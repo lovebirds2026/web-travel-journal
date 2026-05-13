@@ -1,0 +1,29 @@
+<section class="public-browser">
+  <div class="public-browser-col public-browser-left">
+    <h3>{{ left_title }}</h3>
+    <div class="public-browser-grid">
+    {% for item in left_items %}
+      <a class="public-card" href="{{ left_href_prefix }}{{ item.id }}">
+        <img src="{{ url_for('public.uploaded_thumbnail', filename=item.img) if item.img else url_for('static', filename='world_placeholder.png') }}" alt="{{ item.name }}" />
+        <span>{{ item.name }}</span>
+      </a>
+    {% else %}
+      <p>No {{ left_title|lower }} available yet.</p>
+    {% endfor %}
+    </div>
+  </div>
+
+  <div class="public-browser-col public-browser-right">
+    <h3>{{ right_title }}</h3>
+    <div class="public-browser-grid">
+    {% for item in right_items %}
+      <a class="public-card" href="{{ right_href_prefix }}{{ item.id }}">
+        <img src="{{ url_for('public.uploaded_thumbnail', filename=item.img) if item.img else url_for('static', filename='world_placeholder.png') }}" alt="{{ item.name }}" />
+        <span>{{ item.name }}</span>
+      </a>
+    {% else %}
+      <p>No {{ right_title|lower }} available yet.</p>
+    {% endfor %}
+    </div>
+  </div>
+</section>

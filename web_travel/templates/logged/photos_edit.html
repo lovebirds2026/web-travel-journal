@@ -7,8 +7,8 @@
 
 {% block content %}
   <form method="post" enctype="multipart/form-data">
-    <label for="photos">Select Photos (max 4MB)</label>
-    <input type="file" name="photos" id="photos" multiple accept=".jpg,.jpeg,.avif,.png">
+    <label for="photos">Select Photos (max total: 40 MB)</label>
+    <input type="file" name="photos" id="photos" multiple accept=".jpg,.jpeg,.avif,.png,.webp">
 
     {# set item = [] #}
     {% include 'snippets/relations.html' %}

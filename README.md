@@ -109,7 +109,8 @@ A Flask + SQLAlchemy project I built during my Python web development study.
     |   |   |-- countries.py
     |   |   `-- users.py
     |   |-- auth.py
-    |   `-- routes.py
+    |   |-- routes_logged.py
+    |   `-- routes_public.py
     |-- templates
     |   |-- base.html
     |   |-- admin

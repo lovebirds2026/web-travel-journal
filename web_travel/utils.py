@@ -3,13 +3,19 @@ from werkzeug.utils import secure_filename
 
 import jwt
 from datetime import datetime, timedelta, UTC
-import time
 import re
 from pathlib import Path
+from PIL import Image, ImageOps
 from collections import namedtuple
 
+import logging
+log = logging.getLogger(__name__)
+
 JWT_ALGO = 'HS512'
-ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'avif', 'png', ] # pics only
+ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'avif', 'png', 'webp', ] # pics only
+QUALITY = 72
+MAX_SIZE = 1920, 1280
+THUMBNAIL_SIZE = 512, 512
 
 def create_token(payload: dict, seconds=3600):
     exp = datetime.now(UTC) + timedelta(seconds=seconds)
@@ -37,14 +43,26 @@ def allowed_photo_ext(filename) -> bool:
 
 def save_photo(file) -> tuple | None:
     timestamp_str = str(datetime.now().timestamp()).split('.')[0]
-    if file and allowed_photo_ext(file.filename):
-        filename = secure_filename(file.filename)
+    if not file or not allowed_photo_ext(file.filename):
+        return
 
-        # add timestamp
-        ext_index = filename.rfind('.')
-        filename = filename[:ext_index] + '_' + timestamp_str + filename[ext_index:]
-        dest = Path(current_app.config['UPLOAD_FOLDER_PHOTOS']) / filename
-        file.save(dest)
-        size = dest.stat().st_size
-        ImageInfo = namedtuple('ImageInfo', ('path', 'size'))
-        return ImageInfo(filename, size)
+    filename = secure_filename(file.filename)
+    # add timestamp
+    filename = filename.rsplit('.', 1)[0] + '_' + timestamp_str + '.webp'
+    dest_path = Path(current_app.config['UPLOAD_FOLDER_PHOTOS']) / filename
+    thumb_path = Path(current_app.config['UPLOAD_FOLDER_THUMBS']) / filename
+
+    try:
+        with Image.open(file) as img: # Resize image and save in WebP format
+            img = ImageOps.exif_transpose(img) # fix -90c rotation
+            img.thumbnail(MAX_SIZE)
+            img.save(dest_path, 'webp', quality=QUALITY)
+
+            img.thumbnail(THUMBNAIL_SIZE)
+            img.save(thumb_path, 'webp', quality=QUALITY)
+    except Exception as e:
+        log.error(f'Uploading image: {e}')
+
+    size = dest_path.stat().st_size
+    ImageInfo = namedtuple('ImageInfo', ('path', 'size'))
+    return ImageInfo(filename, size)

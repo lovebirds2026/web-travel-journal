@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>Explore the world: Home</h2>
+{% endblock %}
+
+{% block content %}
+  {% set left_title = 'Continents' %}
+  {% set left_items = continents %}
+  {% set left_href_prefix = '/continent/' %}
+
+  {% set right_title = 'Countries' %}
+  {% set right_items = countries %}
+  {% set right_href_prefix = '/country/' %}
+
+  {% include 'snippets/public_two_column_browser.html' %}
+
+{% endblock %}

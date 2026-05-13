@@ -69,6 +69,9 @@ def test_upload_image(flask_client):
     upload_path = Path(Config.UPLOAD_FOLDER_PHOTOS)
     assert upload_path.is_dir()
 
+    thumb_path = Path(Config.UPLOAD_FOLDER_THUMBS)
+    assert thumb_path.is_dir()
+
     assets_folder = Path(__file__).parent / 'assets'
     test_file_fail = assets_folder / 'testpdf.pdf'
     with open(test_file_fail, 'rb') as fp:
@@ -81,5 +84,7 @@ def test_upload_image(flask_client):
         file = FileStorage(fp)
         result = save_photo(file)
         assert result.path and result.size > 0
-        # clean up
-        (upload_path / result.path).unlink()
+
+    # clean up
+    (upload_path / result.path).unlink()
+    (thumb_path / result.path).unlink()

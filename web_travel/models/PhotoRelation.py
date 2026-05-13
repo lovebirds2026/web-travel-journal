@@ -1,5 +1,8 @@
-from sqlalchemy import Index, UniqueConstraint, ForeignKey, Enum as saEnum
+from sqlalchemy import Index, UniqueConstraint, ForeignKey, Enum as saEnum, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from collections import namedtuple
+Card = namedtuple('Card', ('name', 'type', 'id', 'img'))
 
 from .. import db
 from .Continent import Continent
@@ -30,6 +33,7 @@ class PhotoRelation(db.Model):
 
     @classmethod
     def as_dict(cls, user_id, admin=False, exclude: dict=None):
+        """ All possible relations for attaching to a photo """
         if not exclude:
             exclude = {}
         return {
@@ -39,3 +43,30 @@ class PhotoRelation(db.Model):
             'travel': {t.id: t.title for t in Travel.get_own(user_id, admin) 
                                     if not exclude.get('travel', {}).get(t.id)},
         }
+
+    @classmethod
+    def get_card_data(cls, Relation, ids_list=None, last=True, limit=50):
+        from .Photo import Photo # deferred import to avoid circular
+
+        # get the last photo relation for each id of this type (changes up the site)
+        conditions = [cls.relation == Relation.__tablename__]
+        if ids_list is not None:
+            conditions.append(cls.relationFK.in_(ids_list))
+        aggregatorfn = func.max if last else func.min
+
+        latest_sq = (db.select(cls.relation, cls.relationFK, aggregatorfn(cls.photoFK).label('photo_id'))
+            .where(*conditions)
+            .group_by(cls.relation, cls.relationFK)
+            .limit(limit)
+            .subquery()
+        )
+
+        # join to get the photo path and the relation name
+        name_col = getattr(Relation, 'name', False) or Relation.title
+        stmt = (db.select(name_col, latest_sq.c.relation, latest_sq.c.relationFK,
+            func.concat(Photo.filename, '.', Photo.extension))
+            .join(Photo, Photo.id == latest_sq.c.photo_id)
+            .join(Relation, Relation.id == latest_sq.c.relationFK)
+            )
+        latest_photo_relations = db.session.execute(stmt).all()
+        return [Card(*row) for row in latest_photo_relations]

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{{ place.name }}</h2>
+{% endblock %}
+
+{% block content %}
+  <article class="public-detail">
+    <section class="public-detail-meta">
+      <div><strong>Country:</strong> <a href="{{ url_for('public.country', id=place.country.id) }}">{{ place.country.name }}</a></div>
+      {% if place.country.continent %}
+        <div><strong>Continent:</strong> <a href="{{ url_for('public.continent', id=place.country.continent.id) }}">{{ place.country.continent.name }}</a></div>
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>Description</h3>
+      {% if place.description %}
+        <div>{{ place.description|safe }}</div>
+      {% else %}
+        <p><i>No description yet.</i></p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>Related travels</h3>
+      {% if travels %}
+        <div class="public-rel-grid">
+        {% for travel in travels %}
+          <a href="{{ url_for('public.travel', id=travel.id) }}">{{ travel.title }}</a>
+        {% endfor %}
+        </div>
+      {% else %}
+        <p><i>No related travels yet.</i></p>
+      {% endif %}
+    </section>
+
+    {% set alt = place.name %}
+    {% include 'snippets/photo_grid.html' %}
+
+  </article>
+
+{% endblock %}
