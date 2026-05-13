@@ -5,16 +5,82 @@
     {% for photo in photos %}
       {% if photo.filename is defined and photo.extension is defined %}
         {% set file = photo.filename ~ '.' ~ photo.extension %}
-      {% elif photo.img is defined %}
-        {% set file = photo.img %}
       {% else %}
-        {% set file = '' %}
+        {% set file = getattr(photo, 'img', '') %}
       {% endif %}
-      <a class="public-photo-item" href="{{ url_for('public.uploaded_photo', filename=file) if file else '#' }}">
+      <a class="public-photo-item" data-full="{{ url_for('public.uploaded_photo', filename=file) if file else '' }}"
+         href="{{ url_for('public.uploaded_photo', filename=file) if file else '#' }}">
         <img src="{{ url_for('public.uploaded_thumbnail', filename=file) if file else url_for('static', filename='world_placeholder.png') }}" alt="{{ alt }}" />
       </a>
     {% endfor %}
     </div>
+
+    <dialog class="public-photo-viewer">
+      <header>
+        <strong>Photo viewer</strong>
+        <button type="button" class="viewer-close">Close</button>
+      </header>
+      <div class="viewer-body">
+        <button type="button" class="viewer-nav viewer-prev" aria-label="Previous photo">&#8592;</button>
+        <img class="viewer-image" src="" alt="" />
+        <button type="button" class="viewer-nav viewer-next" aria-label="Next photo">&#8594;</button>
+      </div>
+      <p class="viewer-meta"></p>
+    </dialog>
+
+    <script>
+    (function () {
+      const section = document.currentScript.closest('section');
+      const dialog = section.querySelector('dialog.public-photo-viewer');
+      if (!section || !dialog || !dialog.showModal) return;
+
+      const items = Array.from(
+        section.querySelectorAll('a.public-photo-item[data-full]:not([data-full=""])')
+      );
+      if (!items.length) return;
+
+      const viewerImg = dialog.querySelector('.viewer-image');
+      const viewerMeta = dialog.querySelector('.viewer-meta');
+      let currentIndex = 0;
+
+      function show(index) {
+        currentIndex = (index + items.length) % items.length;
+        const item = items[currentIndex];
+        viewerImg.src = item.dataset.full;
+        viewerImg.alt = item.querySelector('img')?.alt || '';
+        viewerMeta.textContent = (currentIndex + 1) + ' / ' + items.length;
+      }
+
+      section.addEventListener('click', (e) => {
+        const link = e.target.closest('a.public-photo-item');
+        if (!link || !section.contains(link)) return;
+        e.preventDefault();
+        const idx = items.indexOf(link);
+        if (idx < 0) return;
+        show(idx);
+        dialog.showModal();
+      });
+
+      dialog.querySelector('.viewer-prev').addEventListener('click', () => show(currentIndex - 1));
+      dialog.querySelector('.viewer-next').addEventListener('click', () => show(currentIndex + 1));
+      dialog.querySelector('.viewer-close').addEventListener('click', () => dialog.close());
+
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) dialog.close();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (!dialog.open) return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          show(currentIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          show(currentIndex + 1);
+        }
+      });
+    })();
+    </script>
   {% else %}
     <p><i>No photos yet.</i></p>
   {% endif %}

@@ -108,7 +108,6 @@ def place(id):
         .order_by(Travel.id.asc())
     )
     travels = db.session.scalars(stmt).all()
-    print(travels)
     photos = Photo.get_from_relation(place)
 
     return render_template('public/place.html', title=place.name, place=place, travels=travels, photos=photos)

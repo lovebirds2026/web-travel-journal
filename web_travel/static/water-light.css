@@ -1023,6 +1023,7 @@ div.photos-container {
 }
 
 
+/* AI-generated CSS START */
 /* public browser layout */
 .public-browser {
   display: grid;
@@ -1119,7 +1120,44 @@ div.photos-container {
   object-fit: cover;
   display: block;
 }
-
+.public-photo-viewer {
+  padding: 0.75rem 1rem 1rem;
+}
+dialog.public-photo-viewer > header:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent;
+  border-radius: 0;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  text-align: left;
+}
+.public-photo-viewer .viewer-close {
+  margin: 0;
+}
+.public-photo-viewer .viewer-body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+}
+.public-photo-viewer .viewer-image {
+  width: 100%;
+  max-height: calc(92vh - 2rem);
+  object-fit: contain;
+  border-radius: 6px;
+  background: #00000015;
+}
+.public-photo-viewer .viewer-nav {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  font-size: 1.25rem;
+}
+.public-photo-viewer .viewer-meta {
+  margin: 0.5rem 0 0;
+  text-align: center;
+}
+/* AI-generated CSS END */
 
 /*Responsive design*/
 @media (min-width:769px) {
