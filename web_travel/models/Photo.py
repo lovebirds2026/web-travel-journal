@@ -1,6 +1,7 @@
 from sqlalchemy import UniqueConstraint, Index, String, sql, Enum as saEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .. import db
 from . import Base, FieldStatus, HasRelationsMixin
 from .PhotoRelation import PhotoRelation
 
@@ -28,3 +29,15 @@ class Photo(HasRelationsMixin, Base):
     relations: Mapped[list['PhotoRelation']] = relationship(back_populates='photo', cascade='all, delete-orphan')
 
 
+    @classmethod
+    def get_from_relation(cls, relation: Base, limit=100):
+        """ Returns all photos for a given object (continent/country/place/travel). """
+        tablename = relation.__tablename__
+        stmt = (db.select(cls).select_from(PhotoRelation)
+            .where(PhotoRelation.relation == tablename, PhotoRelation.relationFK == relation.id)
+            .join(cls, cls.id == PhotoRelation.photoFK)
+            .order_by(cls.id.asc())
+            .limit(limit)
+        )
+        photos = db.session.scalars(stmt).all()
+        return photos

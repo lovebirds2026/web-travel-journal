@@ -1,0 +1,21 @@
+<section>
+  <h3>Photos</h3>
+  {% if photos %}
+    <div class="public-photo-grid">
+    {% for photo in photos %}
+      {% if photo.filename is defined and photo.extension is defined %}
+        {% set file = photo.filename ~ '.' ~ photo.extension %}
+      {% elif photo.img is defined %}
+        {% set file = photo.img %}
+      {% else %}
+        {% set file = '' %}
+      {% endif %}
+      <a class="public-photo-item" href="{{ url_for('public.uploaded_photo', filename=file) if file else '#' }}">
+        <img src="{{ url_for('public.uploaded_thumbnail', filename=file) if file else url_for('static', filename='world_placeholder.png') }}" alt="{{ alt }}" />
+      </a>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p><i>No photos yet.</i></p>
+  {% endif %}
+</section>

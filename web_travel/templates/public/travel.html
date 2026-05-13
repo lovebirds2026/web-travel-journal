@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>Travel: {{ travel.title }}</h2>
+{% endblock %}
+
+{% block content %}
+  <article class="public-detail">
+    <section class="public-detail-meta">
+      <h3><strong></strong> {{ travel.date_from.strftime('%Y') }}</h3> |
+      <div><strong>From:</strong> {{ travel.date_from.strftime('%b %d') }}</div>
+      <div><strong>To:</strong> {{ travel.date_to.strftime('%b %d') }}</div>
+    </section>
+
+    <section>
+      <h3>Description</h3>
+      {% if travel.description %}
+        <div>{{ travel.description|safe }}</div>
+      {% else %}
+        <p><i>No description yet.</i></p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>Related places</h3>
+      {% if relations %}
+        <div class="public-rel-grid">
+        {% for rel_type, rels in relations.items() %}
+          {% for rel_id, rel_name in rels.items() %}
+            {% if rel_type == 'continent' %}
+              <a href="{{ url_for('public.continent', id=rel_id) }}">{{ rel_name }}</a>
+            {% elif rel_type == 'country' %}
+              <a href="{{ url_for('public.country', id=rel_id) }}">{{ rel_name }}</a>
+            {% elif rel_type == 'place' %}
+              <a href="{{ url_for('public.place', id=rel_id) }}">{{ rel_name }}</a>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        </div>
+      {% else %}
+        <p><i>No related places yet.</i></p>
+      {% endif %}
+    </section>
+
+    {% set alt = travel.title %}
+    {% include 'snippets/photo_grid.html' %}
+  
+  </article>
+
+{% endblock %}
