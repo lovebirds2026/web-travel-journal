@@ -3,10 +3,9 @@ from werkzeug.utils import secure_filename
 
 import jwt
 from datetime import datetime, timedelta, UTC
-import time
 import re
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps
 from collections import namedtuple
 
 import logging
@@ -55,6 +54,7 @@ def save_photo(file) -> tuple | None:
 
     try:
         with Image.open(file) as img: # Resize image and save in WebP format
+            img = ImageOps.exif_transpose(img) # fix -90c rotation
             img.thumbnail(MAX_SIZE)
             img.save(dest_path, 'webp', quality=QUALITY)
 

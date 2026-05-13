@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>Explore the world: {{ country.name }}</h2>
+{% endblock %}
+
+{% block content %}
+  {% set left_title = 'Travels' %}
+  {% set left_items = travels %}
+  {% set left_href_prefix = '/travel/' %}
+
+  {% set right_title = 'Places' %}
+  {% set right_items = places %}
+  {% set right_href_prefix = '/place/' %}
+
+  {% include 'snippets/public_two_column_browser.html' %}
+
+{% endblock %}

@@ -45,20 +45,25 @@ class PhotoRelation(db.Model):
         }
 
     @classmethod
-    def get_card_data(cls, Relation, limit=50):
+    def get_card_data(cls, Relation, ids_list=None, last=True, limit=50):
         from .Photo import Photo # deferred import to avoid circular
 
         # get the last photo relation for each id of this type (changes up the site)
-        latest_sq = (db.select(
-            cls.relation, cls.relationFK, func.max(cls.photoFK).label('photo_id'))
-            .where(cls.relation == Relation.__tablename__)
+        conditions = [cls.relation == Relation.__tablename__]
+        if ids_list is not None:
+            conditions.append(cls.relationFK.in_(ids_list))
+        aggregatorfn = func.max if last else func.min
+
+        latest_sq = (db.select(cls.relation, cls.relationFK, aggregatorfn(cls.photoFK).label('photo_id'))
+            .where(*conditions)
             .group_by(cls.relation, cls.relationFK)
             .limit(limit)
-            .subquery())
+            .subquery()
+        )
 
         # join to get the photo path and the relation name
         name_col = getattr(Relation, 'name', False) or Relation.title
-        stmt = (db.select(Relation.name, latest_sq.c.relation, latest_sq.c.relationFK, 
+        stmt = (db.select(name_col, latest_sq.c.relation, latest_sq.c.relationFK,
             func.concat(Photo.filename, '.', Photo.extension))
             .join(Photo, Photo.id == latest_sq.c.photo_id)
             .join(Relation, Relation.id == latest_sq.c.relationFK)

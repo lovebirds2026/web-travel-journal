@@ -30,13 +30,14 @@ class Base(db.Model):
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())
 
 
-    def get_thumbnail(self) -> tuple[str, str] | None: # @TODO: check if it gets cached
+    def get_thumbnail(self, last=True) -> tuple[str, str] | None: # @TODO: check if it gets cached
         from .Photo import Photo
         from .PhotoRelation import PhotoRelation
         print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
+        order = PhotoRelation.photoFK.desc() if last else PhotoRelation.photoFK.asc()
         scalar_subq = (db.select(PhotoRelation.photoFK)
             .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id)
-            .order_by(PhotoRelation.photoFK.desc()).limit(1).scalar_subquery())
+            .order_by(order).limit(1).scalar_subquery())
         photo = db.session.execute(
             db.select(func.concat(Photo.filename, '.', Photo.extension)).where(Photo.id == scalar_subq)
         ).scalar()
