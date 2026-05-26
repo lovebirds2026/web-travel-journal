@@ -60,10 +60,18 @@ def continent(id):
 def country(id):
     """ Displays travels and places for the country (if such). """
     country = db.session.get(Country, id)
-    for place in country.places:
-        place.img = place.get_thumbnail() # n queries, but should be worth it with caching?
+    if not country or country.deleted or country.status != FieldStatus.ACTIVE:
+        flash('Country not found.', 'error')
+        return redirect(url_for('public.index'))
 
-    # get travels
+    # get the places and their thumbnails
+    for i, place in enumerate(country.places):
+        if not place.deleted and place.status == FieldStatus.ACTIVE:
+            place.img = place.get_thumbnail() # n queries, but should be worth it with caching?
+        else:
+            del country.places[i]
+
+    # get the travels
     stmt = (
         db.select(Travel.id).select_from(TravelRelation).where(
         TravelRelation.relation == 'country', TravelRelation.relationFK == country.id)
@@ -85,7 +93,7 @@ def travel(id):
         Travel.id == id, Travel.public == True, Travel.deleted == False))
     if not travel:
         flash('Travel not found.', 'error')
-        return(redirect(url_for('public.index')))
+        return redirect(url_for('public.index'))
 
     relations: dict = travel.get_relation_names()
     photos = Photo.get_from_relation(travel)
@@ -100,7 +108,7 @@ def place(id):
         Place.id == id, Place.status == FieldStatus.ACTIVE, Place.deleted == False))
     if not place:
         flash('Place not found.', 'error')
-        return(redirect(url_for('public.index')))
+        return redirect(url_for('public.index'))
 
     stmt = (db.select(Travel).select_from(TravelRelation)
         .where(TravelRelation.relation == 'place', TravelRelation.relationFK == place.id)
