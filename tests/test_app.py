@@ -19,7 +19,7 @@ from web_travel.utils import allowed_photo_ext, save_photo
 def test_index(flask_client):
     response = flask_client.get('/')
     assert response.status_code == 200
-    assert 'Home' in response.text and 'Web Travel' in response.text
+    assert 'Home' in response.text and 'Travel Journal' in response.text
 
 def test_user_table_exists(User, init_database):
     prepopulated_user = db.session.scalar(db.select(User).where(User.username == 'Kori'))
