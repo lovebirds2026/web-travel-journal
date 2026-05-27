@@ -1,0 +1,21 @@
+name: Deploy Web Travel Journal LIVE
+
+on:
+  push:
+    branches: [ live ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSHKEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd "/home/aimebgl3/python/travel"
+          ./.scripts/deploy_live.sh

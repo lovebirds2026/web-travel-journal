@@ -34,7 +34,7 @@ class Base(db.Model):
     def get_thumbnail(self, last=True) -> tuple[str, str] | str:
         from .Photo import Photo
         from .PhotoRelation import PhotoRelation
-        print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
+        #print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
         order = PhotoRelation.photoFK.desc() if last else PhotoRelation.photoFK.asc()
         scalar_subq = (db.select(PhotoRelation.photoFK)
             .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id)

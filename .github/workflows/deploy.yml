@@ -28,7 +28,7 @@ jobs:
     #   run: |
     #     python -m pytest || echo "No tests found"
 
-    - name: Deploy to server
+    - name: Deploy to server [DEV]
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
