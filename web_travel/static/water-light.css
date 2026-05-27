@@ -1022,6 +1022,10 @@ div.photos-container {
   }
 }
 
+.about-holder {
+  max-width: 80%;
+}
+
 
 /* AI-generated CSS START */
 /* public browser layout */

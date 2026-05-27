@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_ckeditor import CKEditor
+from flask_caching import Cache
 from instance.config import LOG_PATH, UPLOAD_PATH_PHOTOS, Config, TestingConfig
 
 # initial db setup
@@ -18,6 +19,11 @@ db = SQLAlchemy(model_class=SABase) # sets up the engine and the scoped_session 
 
 mail = Mail()
 ckeditor = CKEditor()
+cache = Cache(config={
+    'CACHE_TYPE': 'RedisCache',
+    'CACHE_REDIS_HOST': Config.REDIS_HOST,
+    'CACHE_REDIS_PORT': Config.REDIS_PORT,
+    'CACHE_DEFAULT_TIMEOUT': 30*60, })
 
 def create_app(test_app=False):
     configure_logging()
@@ -34,6 +40,7 @@ def create_app(test_app=False):
 
     mail.init_app(app) # set up at configuration time
     ckeditor.init_app(app)
+    cache.init_app(app, config={'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX']})
 
     # blueprints
     from .views import auth # deferred import (moves the import from module load time -> call time)

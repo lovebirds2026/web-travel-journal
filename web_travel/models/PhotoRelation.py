@@ -5,7 +5,7 @@ from collections import namedtuple
 Card = namedtuple('Card', ('name', 'type', 'id', 'img'))
 
 from .. import db
-from .Continent import Continent
+from .Continent import Continent, FieldStatus
 from .Country import Country
 from .Place import Place
 from .Travel import Travel
@@ -49,24 +49,33 @@ class PhotoRelation(db.Model):
         from .Photo import Photo # deferred import to avoid circular
 
         # get the last photo relation for each id of this type (changes up the site)
-        conditions = [cls.relation == Relation.__tablename__]
+        conditions_subq = [cls.relation == Relation.__tablename__]
         if ids_list is not None:
-            conditions.append(cls.relationFK.in_(ids_list))
+            conditions_subq.append(cls.relationFK.in_(ids_list))
         aggregatorfn = func.max if last else func.min
 
         latest_sq = (db.select(cls.relation, cls.relationFK, aggregatorfn(cls.photoFK).label('photo_id'))
-            .where(*conditions)
+            .where(*conditions_subq)
             .group_by(cls.relation, cls.relationFK)
             .limit(limit)
             .subquery()
         )
 
         # join to get the photo path and the relation name
-        name_col = getattr(Relation, 'name', False) or Relation.title
+        conditions_main = [Relation.deleted == False]
+        if name_col := getattr(Relation, 'name', False):
+            # Continent/Country/Place
+            conditions_main.append(Relation.status == FieldStatus.ACTIVE)
+        else:
+            # Travel
+            name_col = Relation.title
+            conditions_main.append(Relation.public == True)
+
         stmt = (db.select(name_col, latest_sq.c.relation, latest_sq.c.relationFK,
             func.concat(Photo.filename, '.', Photo.extension))
             .join(Photo, Photo.id == latest_sq.c.photo_id)
             .join(Relation, Relation.id == latest_sq.c.relationFK)
-            )
+            .where(*conditions_main)
+        )
         latest_photo_relations = db.session.execute(stmt).all()
         return [Card(*row) for row in latest_photo_relations]
