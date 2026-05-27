@@ -5,6 +5,7 @@ from sqlalchemy import desc
 from flask_mail import Message
 from pathlib import Path
 from werkzeug.datastructures import FileStorage
+import pytest
 
 from web_travel import db, mail
 from instance.config import Config
@@ -52,8 +53,9 @@ def test_photo_table_exists(init_database):
     assert prepopulated_photo.filename == 'photo1'
     assert prepopulated_photo.extension == 'png'
 
+@pytest.mark.skipif(Config.SERVER_NAME == 'travel.aime.bg', reason='No email suffix for Live')
 def test_server_name_in_email():
-    deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
+    deployment_suffix = ' [DEV]'
 
     with mail.record_messages() as outbox:
         msg = Message(
@@ -63,7 +65,7 @@ def test_server_name_in_email():
             body='Pytest email dev server suffix'
         )
         mail.send(msg)
-        assert outbox[0].subject.endswith('[DEV]')
+        assert outbox[0].subject.endswith(deployment_suffix)
 
 def test_upload_image(flask_client):
     upload_path = Path(Config.UPLOAD_FOLDER_PHOTOS)

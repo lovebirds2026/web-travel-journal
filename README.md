@@ -3,7 +3,7 @@
 # Web Travel Journal
 
 A Flask + SQLAlchemy project I built during my Python web development study.  
-[Travel Journal](https://travel.aime.bg) is a full CRUD app with auth, admin area, relational tagging, photo uploads and tests.
+[Travel Journal](https://travel.aime.bg) is a full CRUD app with auth, admin area, relational tagging, photo uploads, Redis caching and tests.
 
 ## Features
 
@@ -20,13 +20,14 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 - Flask
 - Flask-SQLAlchemy (SQLAlchemy 2 ORM-style)
 - Flask-Mail
+- Flask-Caching with Redis
 - JWT (`pyjwt`)
-- Jinja templates + light vanilla JS
+- Jinja templates leveraging reusable snippets
 - Pytest/Coverage
 - Github Actions for CI/CD
-- Jira with a dedicated Project Lead
+- Complete Jira workflow with a dedicated Project Lead
 
-## Quietly technical parts I am proud of
+## Technical parts I am proud of
 
 - Reusable model design:
   - shared `Base` model with common fields/audit-ish columns
@@ -82,6 +83,7 @@ A Flask + SQLAlchemy project I built during my Python web development study.
 |   |-- test_country.py
 |   |-- test_place.py
 |   |-- test_photo.py
+|   |-- test_redis.py
 |   |-- test_travel.py
 |   `-- test_user.py
 `-- web_travel
@@ -89,6 +91,7 @@ A Flask + SQLAlchemy project I built during my Python web development study.
     |-- logs
     |   `-- logfile.log
     |-- static
+    |   |-- about.jpg
     |   |-- lovebirds_ico.ico
     |   `-- water-light.css
     |-- models
@@ -125,8 +128,7 @@ A Flask + SQLAlchemy project I built during my Python web development study.
     |   |   |-- register.html
     |   |   |-- requestpasswordreset.html
     |   |   `-- resetpassword.html
-    |   |-- main
-    |   |   |-- index.html
+    |   |-- logged
     |   |   |-- photos.html
     |   |   |-- photos_edit.html
     |   |   |-- places.html
@@ -134,7 +136,16 @@ A Flask + SQLAlchemy project I built during my Python web development study.
     |   |   |-- travels.html
     |   |   |-- travels_edit.html
     |   |   `-- user.html
+    |   |-- public
+    |   |   |-- about.html
+    |   |   |-- continent.html
+    |   |   |-- country.html
+    |   |   |-- index.html
+    |   |   |-- place.html
+    |   |   `-- travel.html
     |   `-- snippets
+    |   |   |-- photo_grid.html
+    |   |   |-- public_two_column_browser.html
     |       `-- relations.html
     |-- utils.py
     `-- wsgi.py
