@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}About the project{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+  <div class="about-holder">
+    <p>Friends' Travel Journal is a project created from us in our leisure time to learn Python for Web and to have fun.
+    The idea behind it is to have a place where our group of friends can share our Travel experiences and photos and
+    share them easily on the line.</p>
+
+    <p>Everyone is free to join except automated entities, which will be moderated. An email confirmation is required for
+    the account to be made active.</p>
+
+    <p>If you need admin assistance, countries activated or other type of support, please message us at office@ ai-me.bg .
+    Enjoy exploring the World!</p>
+  </div>
+
+  <br/><hr/><br/>
+
+  <div class="about-holder">
+    <p>Friends' Travel Journal е проект, създаден от нас в свободното ни време с цел да научим Python за Интернет и да се
+    забавляваме. Идеята на сайта е да имаме място, където нашата група от приятели да споделя пътуванията ни и снимки
+    от тях и да можем лесно да ги споделяме онлайн.</p>
+
+    <p>Всеки с изключение на автоматизираните агенти, които ще бъдат модерирани, е поканен да се присъедини. Необходимо е
+    потвърждение на имейла, за да бъде активиран акаунта ви.</p>
+
+    <p>Ако имате нужда от административна помощ, да активираме определени страни или друг вид съдействие, моля пишете ни
+    на office@ ai-me.bg .
+    Приятно разглеждане на Света!</p>
+  </div>
+
+  <br/><br/>
+  <img src="{{ url_for('static', filename='about.jpg') }}" />
+{% endblock %}

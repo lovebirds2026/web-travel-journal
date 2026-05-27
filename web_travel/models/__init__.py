@@ -6,7 +6,7 @@ from datetime import datetime, UTC
 from enum import StrEnum
 from collections import defaultdict
 
-from .. import db
+from .. import db, cache
 
 class FieldStatus(StrEnum):
     NEW = 'new'
@@ -30,7 +30,8 @@ class Base(db.Model):
     deleted: Mapped[bool] = mapped_column(server_default=sql.false())
 
 
-    def get_thumbnail(self, last=True) -> tuple[str, str] | None: # @TODO: check if it gets cached
+    @cache.memoize(timeout=60)
+    def get_thumbnail(self, last=True) -> tuple[str, str] | str:
         from .Photo import Photo
         from .PhotoRelation import PhotoRelation
         print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
@@ -41,7 +42,7 @@ class Base(db.Model):
         photo = db.session.execute(
             db.select(func.concat(Photo.filename, '.', Photo.extension)).where(Photo.id == scalar_subq)
         ).scalar()
-        return photo
+        return photo or '0'
 
     @classmethod
     def search_and_filter(cls, filters, search_field=None, search_text=None):

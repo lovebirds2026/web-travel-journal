@@ -3,6 +3,8 @@ import uuid
 from redis import Redis
 
 from instance.config import Config
+from web_travel import db
+from web_travel.models.Continent import Continent
 
 # can be skipped with pytest -m "not integration"
 @pytest.mark.integration
@@ -26,3 +28,14 @@ def test_redis():
     finally:
         redis_client.delete(test_key)
         redis_client.close()
+
+def test_thumbnail_caching(query_counter):
+    continents = db.session.scalars(db.select(Continent)).all()
+    assert len(continents) == 2
+
+    with query_counter() as counter:
+        for continent in continents * 2: # duplicate them to check caching
+            continent.img = continent.get_thumbnail()
+
+    db_queries = counter()
+    assert db_queries <= 2

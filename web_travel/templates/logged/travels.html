@@ -24,7 +24,7 @@
       {% for travel in travels %}
       <tr>
           <td>{{ travel.id }}
-          <td>{{ travel.title }}
+          <td><a href="/travel/{{ travel.id }}">{{ travel.title }}</a>
           <td>{{ travel.date_from.strftime('%b %d, %Y') }} - {{ travel.date_to.strftime('%b %d, %Y') }}
           <td colspan="5">{{ travel.user_note|truncate(100) }}
           <td>{{ 'Public' if travel.public else 'Hidden' }}

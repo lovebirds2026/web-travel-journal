@@ -67,7 +67,7 @@
       {% for place in places %}
       <tr>
           <td>{{ place.id }}
-          <td>{{ place.name }}
+          <td><a href="/place/{{ place.id }}">{{ place.name }}</a>
           <td colspan="5">{{ place.description|truncate(100) }} {# |safe #}
           <td>{{ place.country.name }}
           <td>{{ place.status }}

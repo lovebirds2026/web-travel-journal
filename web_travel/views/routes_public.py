@@ -5,7 +5,7 @@ from random import shuffle
 import logging
 log = logging.getLogger(__name__)
 
-from .. import db
+from .. import db, cache
 from ..models.Place import Place, FieldStatus
 from ..models.Continent import Continent
 from ..models.Country import Country
@@ -17,12 +17,13 @@ from ..models.PhotoRelation import PhotoRelation
 bluepr = Blueprint('public', __name__)
 
 @bluepr.route('/')
+@cache.cached(timeout=60)
 def index():
     """ Displays all continents and max 50 contries with related images. """
     continents = Continent.get_active()
     shuffle(continents)
     for continent in continents:
-        continent.img = continent.get_thumbnail() # n queries (7)
+        continent.img = continent.get_thumbnail() # n queries (7), cached
 
     # new approach: get right cards
     right_cards = PhotoRelation.get_card_data(Country)
@@ -67,7 +68,7 @@ def country(id):
     # get the places and their thumbnails
     for i, place in enumerate(country.places):
         if not place.deleted and place.status == FieldStatus.ACTIVE:
-            place.img = place.get_thumbnail() # n queries, but should be worth it with caching?
+            place.img = place.get_thumbnail()
         else:
             del country.places[i]
 
@@ -119,6 +120,13 @@ def place(id):
     photos = Photo.get_from_relation(place)
 
     return render_template('public/place.html', title=place.name, place=place, travels=travels, photos=photos)
+
+
+@bluepr.route('/about')
+@cache.cached()
+def about():
+    """ Provides information about the Project """
+    return render_template('public/about.html', title='About the Project')
 
 
 @bluepr.route('/uploads/photos/<filename>')
