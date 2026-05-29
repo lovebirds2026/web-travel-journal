@@ -34,7 +34,8 @@ class Photo(HasRelationsMixin, Base):
         """ Returns all photos for a given object (continent/country/place/travel). """
         tablename = relation.__tablename__
         stmt = (db.select(cls).select_from(PhotoRelation)
-            .where(PhotoRelation.relation == tablename, PhotoRelation.relationFK == relation.id)
+            .where(PhotoRelation.relation == tablename, PhotoRelation.relationFK == relation.id,
+                cls.public == True, cls.status == FieldStatus.ACTIVE)
             .join(cls, cls.id == PhotoRelation.photoFK)
             .order_by(cls.id.asc())
             .limit(limit)

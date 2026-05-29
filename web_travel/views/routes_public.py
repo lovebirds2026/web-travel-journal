@@ -6,6 +6,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from .. import db, cache
+from .auth import is_logged_in
 from ..models.Place import Place, FieldStatus
 from ..models.Continent import Continent
 from ..models.Country import Country
@@ -17,7 +18,7 @@ from ..models.PhotoRelation import PhotoRelation
 bluepr = Blueprint('public', __name__)
 
 @bluepr.route('/')
-@cache.cached(timeout=60)
+@cache.cached(timeout=1800, unless=is_logged_in)
 def index():
     """ Displays all continents and max 50 contries with related images. """
     continents = Continent.get_active()
@@ -34,6 +35,7 @@ def index():
 
 
 @bluepr.route('/continent/<int:id>')
+@cache.cached(timeout=1800, unless=is_logged_in)
 def continent(id):
     """ Displays contries and travels for the continent (if such). """
     continent = db.session.get(Continent, id)
@@ -58,6 +60,7 @@ def continent(id):
 
 
 @bluepr.route('/country/<int:id>')
+@cache.cached(timeout=1800, unless=is_logged_in)
 def country(id):
     """ Displays travels and places for the country (if such). """
     country = db.session.get(Country, id)
@@ -88,6 +91,7 @@ def country(id):
 
 
 @bluepr.route('/travel/<int:id>')
+@cache.cached(timeout=1800, unless=is_logged_in)
 def travel(id):
     """ Displays specific travel details """
     travel = db.session.scalar(db.select(Travel).where(
@@ -103,6 +107,7 @@ def travel(id):
 
 
 @bluepr.route('/place/<int:id>')
+@cache.cached(timeout=1800, unless=is_logged_in)
 def place(id):
     """ Displays specific place details """
     place = db.session.scalar(db.select(Place).where(
