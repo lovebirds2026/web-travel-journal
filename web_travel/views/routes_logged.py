@@ -15,7 +15,7 @@ from ..models.Travel import Travel
 from ..models.TravelRelation import TravelRelation
 from ..models.Photo import Photo
 from ..models.PhotoRelation import PhotoRelation
-from ..utils import save_photo
+from ..utils import save_photo, delete_photo
 
 bluepr = Blueprint('logged', __name__) # web_travel.routes_logged
 
@@ -40,6 +40,7 @@ def photos():
                     edit_photo.status = new_status
                 elif request.form.get('delete'):
                     db.session.delete(edit_photo)
+                    delete_photo(edit_photo.filename + '.' + edit_photo.extension)
                 elif public := request.form.get('public'):
                     edit_photo.public = int(public)
                 else: # relations-only update
