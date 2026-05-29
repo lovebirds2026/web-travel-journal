@@ -983,6 +983,10 @@ form .dateholder > div:first-child {
 
 } 
 
+.photo-filter > label {
+  margin-bottom: -6px;
+}
+
 div.photos-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

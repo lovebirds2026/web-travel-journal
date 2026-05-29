@@ -49,12 +49,14 @@ class PhotoRelation(db.Model):
         from .Photo import Photo # deferred import to avoid circular
 
         # get the last photo relation for each id of this type (changes up the site)
-        conditions_subq = [cls.relation == Relation.__tablename__]
+        conditions_subq = [cls.relation == Relation.__tablename__,
+            Photo.public == True, Photo.status == FieldStatus.ACTIVE]
         if ids_list is not None:
             conditions_subq.append(cls.relationFK.in_(ids_list))
         aggregatorfn = func.max if last else func.min
 
         latest_sq = (db.select(cls.relation, cls.relationFK, aggregatorfn(cls.photoFK).label('photo_id'))
+            .join(Photo, cls.photoFK == Photo.id)
             .where(*conditions_subq)
             .group_by(cls.relation, cls.relationFK)
             .limit(limit)

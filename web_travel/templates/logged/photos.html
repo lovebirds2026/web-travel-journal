@@ -7,6 +7,12 @@
 {% block content %}
   <h3>My photos</h3>
 
+  <div class="photo-filter">
+    <label for="photo_filter">Type to filter photos by tag: </label>
+    <input type="text" name="photo_filter" id="photo_filter" class="inline" >
+  </div>
+  <br/>
+
   <div class="photos-container">
   {% for photo in photos %}
     <div class="photo-holder">
@@ -118,5 +124,22 @@
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
     });
+
+
+    // filter photos
+    const photosFilter = document.getElementById('photo_filter');
+    const photos = document.querySelectorAll('.photo-holder');
+    const FILTER_KEY = 'photo_filter';
+
+    photosFilter.addEventListener('input', function (e) {
+      const q = e.target.value.trim().toLowerCase();
+      sessionStorage.setItem(FILTER_KEY, e.target.value); // remembers the filter for page reload
+      photos.forEach(p => {
+        p.hidden = q && !p.querySelector('.photo-relations').textContent.toLowerCase().includes(q);
+      });
+    });
+    // initial value
+    photosFilter.value = sessionStorage.getItem(FILTER_KEY) || '';
+    photosFilter.dispatchEvent(new Event('input'));
   </script>
 {% endblock %}

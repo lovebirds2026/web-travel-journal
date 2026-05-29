@@ -36,12 +36,14 @@ class Base(db.Model):
         from .PhotoRelation import PhotoRelation
         #print(f'Getting thumbnail for {type(self).__tablename__} {self.id}')
         order = PhotoRelation.photoFK.desc() if last else PhotoRelation.photoFK.asc()
-        scalar_subq = (db.select(PhotoRelation.photoFK)
-            .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id)
-            .order_by(order).limit(1).scalar_subquery())
-        photo = db.session.execute(
-            db.select(func.concat(Photo.filename, '.', Photo.extension)).where(Photo.id == scalar_subq)
-        ).scalar()
+
+        stmt = (db.select(func.concat(Photo.filename, '.', Photo.extension))
+            .join(PhotoRelation, Photo.id == PhotoRelation.photoFK)
+            .where(PhotoRelation.relation == type(self).__tablename__, PhotoRelation.relationFK == self.id,
+                Photo.public == True, Photo.status == FieldStatus.ACTIVE)
+            .order_by(order).limit(1))
+
+        photo = db.session.execute(stmt).scalar()
         return photo or '0'
 
     @classmethod
