@@ -15,7 +15,7 @@
 
   <div class="available">
     <label for="_filter">Type to filter available tags: </label>
-    <input type="text" name="_filter" class="relation_search inline" >
+    <input type="text" name="_filter" id="_filter" class="relation_search inline" >
     {% for rel_type, rels in all_relations.items() %}
       <div data-rel-group="{{ rel_type }}"><span class="rel_label">{{ rel_type|capitalize|replace('y', 'ie') }}s:</span>
       {% for rel_id, rel_name in rels.items() %}

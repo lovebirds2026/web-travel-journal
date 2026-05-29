@@ -66,3 +66,9 @@ def save_photo(file) -> tuple | None:
     size = dest_path.stat().st_size
     ImageInfo = namedtuple('ImageInfo', ('path', 'size'))
     return ImageInfo(filename, size)
+
+def delete_photo(filename) -> None:
+    img_path = Path(current_app.config['UPLOAD_FOLDER_PHOTOS']) / filename
+    img_path.unlink(missing_ok=True)
+    thumb_path = Path(current_app.config['UPLOAD_FOLDER_THUMBS']) / filename
+    thumb_path.unlink(missing_ok=True)

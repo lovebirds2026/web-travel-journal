@@ -178,3 +178,8 @@ def add_cache_headers(response):
     response.cache_control.no_cache = False
     response.cache_control.max_age = max_age
     return response
+
+
+def is_logged_in():
+    """ Used for public routes caching """
+    return bool(session.get('user_id'))
