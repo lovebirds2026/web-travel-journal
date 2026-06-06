@@ -33,7 +33,7 @@ class User(Base):
 
     # these may need to be moved out to a service layer
     def send_email_confirmation_link(self):
-        token = create_token({'user_id': self.id}, 60 * 60)
+        token = create_token({'user_id': self.id, 'purpose': 'email-confirm'}, 60 * 60)
         link = url_for('auth.confirm_email', _external=True, t=token)
         deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
 
@@ -52,7 +52,7 @@ class User(Base):
         return True
 
     def send_reset_password_link(self):
-        token = create_token({'user_id': self.id}, 30 * 60) # 30min expiration
+        token = create_token({'user_id': self.id, 'purpose': 'pwd-reset'}, 30 * 60) # 30min expiration
         link = url_for('auth.reset_password', _external=True, t=token)
         deployment_suffix = '' if Config.SERVER_NAME == 'travel.aime.bg' else ' [DEV]'
 

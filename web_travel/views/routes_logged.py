@@ -84,8 +84,9 @@ def add_photos():
                         photo.update_relations(relations)
                 else:
                     flash(f'Invalid file: {file.filename}', 'error')
-                db.session.add_all(photos)
-                db.session.commit()
+
+            db.session.add_all(photos)
+            db.session.commit()
 
     all_relations = PhotoRelation.as_dict(g.user.id, g.user.is_admin)
     return render_template('logged/photos_edit.html', all_relations=all_relations)
@@ -114,7 +115,7 @@ def add_edit_travel():
             return redirect(url_for('public.index'))
 
     if request.method == 'POST':
-        errors = Travel.validate_input(request.form)
+        errors = Travel.validate_input(request.form, travel_id)
         if errors:
             for msg in errors:
                 flash(msg, 'error')
@@ -180,7 +181,7 @@ def add_edit_place():
             return redirect(url_for('public.index'))
 
     if request.method == 'POST':
-        errors = Place.add_edit(request.form, is_admin=g.user.is_admin)
+        errors = Place.add_edit(request.form, place_id, is_admin=g.user.is_admin)
         if errors:
             for msg in errors:
                 flash(msg, 'error')
