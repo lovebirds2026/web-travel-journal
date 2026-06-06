@@ -13,6 +13,6 @@ def test_users_list(flask_client, init_database):
     assert response.status_code == 200
     assert 'Admin: Users list' in response.text
 
-    with flask_client.session_transaction() as session: # @TODO need to fix this in conftest
+    with flask_client.session_transaction() as session:
         session.clear()
 

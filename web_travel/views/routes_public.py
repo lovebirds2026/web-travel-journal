@@ -69,11 +69,13 @@ def country(id):
         return redirect(url_for('public.index'))
 
     # get the places and their thumbnails
-    for i, place in enumerate(country.places):
+    valid_places = []
+    for place in country.places:
         if not place.deleted and place.status == FieldStatus.ACTIVE:
             place.img = place.get_thumbnail()
-        else:
-            del country.places[i]
+            valid_places.append(place)
+    country.places = valid_places
+
 
     # get the travels
     stmt = (

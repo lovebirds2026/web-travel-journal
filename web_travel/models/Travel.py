@@ -28,11 +28,14 @@ class Travel(HasRelationsMixin, Base):
 
 
     @classmethod
-    def validate_input(cls, form: dict) -> list:
+    def validate_input(cls, form: dict, get_id) -> list:
         errors = []
         title = form.get('title')
         date_from = form.get('date_from')
         date_to = form.get('date_to')
+        post_id = form.get('id')
+        if post_id and post_id != get_id:
+            errors.append('Invalid data provided.')
         if not title:
             errors.append('Travel name is required.')
         if not date_from or not date_to:
