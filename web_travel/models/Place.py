@@ -24,10 +24,13 @@ class Place(Base):
     
 
     @classmethod
-    def add_edit(cls, form: dict, is_admin=False) -> list:
+    def add_edit(cls, form: dict, get_id, is_admin=False) -> list:
         errors = []
         name = form.get('name')
         country_id = form.get('country_id')
+        post_id = form.get('id', 0)
+        if post_id and post_id != get_id:
+            errors.append('Invalid data provided.')
         if not name:
             errors.append('Invalid place name.')
         if not country_id:
@@ -45,8 +48,8 @@ class Place(Base):
         if is_admin and form.get('status'):
             values_dict['status'] = form.get('status')
 
-        if place_id := form.get('id', 0): # Update
-            stmt = update(cls).where(cls.id == place_id).values(values_dict)
+        if post_id: # Update
+            stmt = update(cls).where(cls.id == post_id).values(values_dict)
             db.session.execute(stmt)
         else: # Add
             new_place = cls(**values_dict)

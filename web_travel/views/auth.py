@@ -59,7 +59,7 @@ def register():
 
                 errors.append(f'We could not send an email to {new_user.email}. '
                     'Please contact the site administrator for more information on '
-                    'resolving the issue.', 'error')
+                    'resolving the issue.')
         for msg in errors:
             flash(msg, 'error')
 
@@ -68,7 +68,8 @@ def register():
 
 @bluepr.route('/confirm/<t>', methods=['GET'])
 def confirm_email(t):
-    if token := decode_token(t):
+    token = decode_token(t)
+    if token and token.get('purpose') == 'email-confirm':
         user = db.get_or_404(User, token['user_id'])
         user.active = True
         db.session.commit()
@@ -123,10 +124,9 @@ def request_password_reset():
 
 @bluepr.route('/reset-password', methods=['GET', 'POST'])
 def reset_password():
-    token_param = request.args.get('t')
-    if token_param:
+    if token_param := request.args.get('t'):
         token = decode_token(token_param)
-    if not token_param or not token:
+    if not token_param or not token or token.get('purpose') != 'pwd-reset':
         return redirect(url_for('public.index'))
 
     if request.method == 'POST':

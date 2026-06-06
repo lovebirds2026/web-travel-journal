@@ -10,3 +10,4 @@ instance/
 web_travel/static/ckeditor
 # Other:
 .cursorignore
+review_*

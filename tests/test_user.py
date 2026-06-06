@@ -64,7 +64,7 @@ def test_register_emailconf_login(flask_client, User):
     assert session.get('user_id') is None
 
     # confirm email with token
-    token = create_token({'user_id': user.id}, 5 * 60)
+    token = create_token({'user_id': user.id, 'purpose': 'email-confirm'}, 5 * 60)
     response_confirm_email = flask_client.get(f'/auth/confirm/{token}', follow_redirects=True)
     assert response_confirm_email.request.path == '/auth/login'
     assert 'confirmed' in response_confirm_email.text
@@ -91,7 +91,7 @@ def test_login_fail(flask_client):
 def test_reset_password(flask_client, User, init_database):
     user = db.session.scalar(db.select(User).where(User.username == 'Bali'))
     assert user is not None
-    token = create_token({'user_id': user.id}, 30 * 60)
+    token = create_token({'user_id': user.id, 'purpose': 'pwd-reset'}, 30 * 60)
 
     new_pass = '  '
     response = flask_client.post(f'auth/reset-password?t={token}', data={
@@ -100,6 +100,19 @@ def test_reset_password(flask_client, User, init_database):
     }, follow_redirects=True)
     assert user.check_password(new_pass)
     assert 'Password changed successfully' in response.text
+
+
+def test_wrong_token_purpose(flask_client, User, init_database):
+    user = db.session.scalar(db.select(User).where(User.username == 'Bali'))
+    token = create_token({'user_id': user.id}, 30 * 60) # missing purpose key
+
+    new_pass = 'SHOULDNTGETHERE'
+    response = flask_client.post(f'auth/reset-password?t={token}', data={
+        'password': new_pass,
+        'password2': new_pass,
+    }, follow_redirects=True)
+    assert 'Password changed successfully' not in response.text
+    assert response.request.path == '/'
 
 
 def test_disallowed_login_register_when_logged(flask_client, init_database):
